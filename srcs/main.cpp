@@ -9,7 +9,7 @@ int main (int argc, char **argv)
     }
     
     Tokenizer test(argv[1]);
-    test.Tokenizeall();
-    test.display_config();
-    
+    int code = test.Tokenizeall();
+     test.display_config();
+    return code;
 }

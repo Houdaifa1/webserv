@@ -14,20 +14,20 @@ class Tokenizer
         int                 index;
         int                 col;
         int                 line;
-        int                 done;
         char                c;
 
-        int     tokenize_str();
-        int     get_config_in_str();
-        void    skip_void();
-        void    is_comment();
-        void    is_symbol();
-        void    is_digit();
+        void     tokenize_str();
+        void     get_config_in_str();
+        bool    consume_whitespaces();
+        bool    consume_comment();
+        bool    consume_symbol();
+        bool    consume_digit();
         int     is_only_digits(const std::string &value);
         int     is_size_digit(const std::string &value, const std::string  &allowed);
-        void    is_path();
+        bool    consume_path();
         int     not_end_value();
-        void    is_identifier();
+        bool    consume_identifier();
+        bool    consume_quotes();
         int     valid_identifier_char();
 
     public :
