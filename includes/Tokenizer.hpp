@@ -29,6 +29,7 @@ class Tokenizer
         bool    consume_identifier();
         bool    consume_quotes();
         int     valid_identifier_char();
+        bool    is_location_modifier(std::string &value);
 
     public :
 

@@ -63,9 +63,32 @@ int Tokenizer::not_end_value()
 
 int Tokenizer::valid_identifier_char()
 {
-    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_')
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') 
+    || c == '_' || c == '.')
         return 1;
     return 0;
+}
+bool    Tokenizer::is_location_modifier(std::string &value)
+{
+    bool loc_mod = false;
+    if (c == '~' || c == '=')
+    {
+        loc_mod = true;
+        value += c;
+        index++;
+        col++;
+        if (index < config.size())
+            c = config[index];
+        else
+            return loc_mod;
+        if (c == '*')
+        {
+            value += c;
+            index++;
+            col++;
+        }
+    }
+    return loc_mod;
 }
 
 bool Tokenizer::consume_whitespaces()
@@ -102,13 +125,14 @@ bool Tokenizer::consume_comment()
         for (; index < config.size(); index++)
         {
             c = config[index];
-            value += c;
             if (c == '\n')
             {
                 line++;
                 index++;
+                 
                 break;
             }
+            value += c;
         }
         new_token.set_new_token(value, start_col, start_line, COMMENT);
         tokens.push_back(new_token);
@@ -119,16 +143,23 @@ bool Tokenizer::consume_comment()
 
 bool Tokenizer::consume_symbol()
 {
+    std::string value;
+    Token new_token;
+
     if (c == '{' || c == '}' || c == ';')
     {
-        Token new_token;
-        std::string value;
-
+        
         value += c;
         new_token.set_new_token(value, col, line, SYMBOL);
         tokens.push_back(new_token);
         index++;
         col++;
+        return true;
+    }
+    else if (is_location_modifier(value))
+    {
+        new_token.set_new_token(value, col, line, LOCATION_MODIFIER);
+        tokens.push_back(new_token);
         return true;
     }
     else

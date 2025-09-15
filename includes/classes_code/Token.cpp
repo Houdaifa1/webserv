@@ -16,25 +16,24 @@ const char* tokenTypeToString(TokenType type)
 {
     switch(type)
     {
-        case UNDEFINED:    return "UNDEFINED";
-        case IDENTIFIER:   return "IDENTIFIER";
-        case STRING:       return "STRING";
-        case SYMBOL:       return "SYMBOL";
-        case NUMBER:       return "NUMBER";
-        case SIZE:         return "SIZE";
-        case PATH:         return "PATH";
-        case COMMENT:      return "COMMENT";
-        case END_OF_FILE:  return "END_OF_FILE";
-        default:           return "UNKNOWN";
+        case UNDEFINED:         return "UNDEFINED";
+        case IDENTIFIER:        return "IDENTIFIER";
+        case STRING:            return "STRING";
+        case SYMBOL:            return "SYMBOL";
+        case NUMBER:            return "NUMBER";
+        case SIZE:              return "SIZE";
+        case PATH:              return "PATH";
+        case COMMENT:           return "COMMENT";
+        case LOCATION_MODIFIER: return "LOCATION_MODIFIER";
     }
 }
 
 
 void Token::display_token()
 {
-    // std::cout << tokenTypeToString(type) << "  :  ";
-    std::cout << value << "\n";
-    // std::cout << line << "  ,  ";
-    // std::cout << col << "\n";
+    std::cout << tokenTypeToString(type) << "  :  ";
+    std::cout << value << "     ";
+    std::cout << line << "  ,  ";
+    std::cout << col << "\n";
 }
 
