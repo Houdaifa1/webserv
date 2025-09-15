@@ -13,7 +13,7 @@ enum    TokenType
     SIZE,
     PATH,
     COMMENT,
-    END_OF_FILE,
+    LOCATION_MODIFIER,
 };
 
 

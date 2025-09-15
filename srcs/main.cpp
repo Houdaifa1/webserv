@@ -1,15 +1,13 @@
-# include "../includes/Tokenizer.hpp"
+#include "webserv.hpp"
 
 
 int main (int argc, char **argv)
 {
-    if (argc != 2)
+    if (argc < 2)
     {
+        std::cerr << "Usage: ./webserv <config_file>\n";
         return 1;
     }
     
-    Tokenizer test(argv[1]);
-    int code = test.Tokenizeall();
-     test.display_config();
-    return code;
+
 }
