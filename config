@@ -2,7 +2,7 @@
 worker_processes 4;
 error_log "/var/log/nginx/error.log" info;
 
-server {
+server {;
     listen 8080;
     server_name "example.com"  www.example.com;
     root '/var/www/example';
@@ -61,6 +61,6 @@ server {
 # Unclosed quote case (should error!)
 server {
     listen 8081;
-    root "/var/unclosed
+    root "/var/unclosed"
     index index.html;
-}"
+}

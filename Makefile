@@ -4,13 +4,21 @@ CC          = c++
 CFLAGS      = -Wall -Wextra -Werror -w -std=c++98
 
 SRC_DIR     = srcs
-CLS_SRC_DIR = includes/classes_code
+PARS_DIR    = srcs/parsing
+TKN_SRC_DIR = srcs/parsing/parse_tokens
+CNF_SRC_DIR = srcs/parsing/parse_config
 
-SRC         = $(SRC_DIR)/main.cpp \
-              $(SRC_DIR)/get_config.cpp
-              $(CLS_SRC_DIR)/Token.cpp \
-              $(CLS_SRC_DIR)/Tokenizer.cpp \
-              $(CLS_SRC_DIR)/TokenizerError.cpp
+SRC         = $(SRC_DIR)/main.cpp           \
+              $(PARS_DIR)/get_cnf.cpp        \
+              $(TKN_SRC_DIR)/Token.cpp        \
+              $(TKN_SRC_DIR)/Tokenizer.cpp     \
+              $(TKN_SRC_DIR)/TokenizerError.cpp \
+              $(CNF_SRC_DIR)/Config.cpp  \
+              $(CNF_SRC_DIR)/Parser.cpp   \
+              $(CNF_SRC_DIR)/Server.cpp    \
+              $(CNF_SRC_DIR)/Location.cpp   \
+              $(CNF_SRC_DIR)/Directive.cpp   \
+              
 
 all: $(NAME)
 
