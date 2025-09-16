@@ -36,6 +36,7 @@ class Tokenizer
         Tokenizer(const std::string &file_name);
         int Tokenizeall();
         void display_config();
+        std::vector<Token>  get_tokens();
   
 
 };

@@ -1,7 +1,7 @@
 # ifndef TOKEN_HPP
 # define TOKEN_HPP
 
-# include "Libraries.hpp"
+# include "../Libraries.hpp"
 
 enum    TokenType
 {
@@ -29,9 +29,9 @@ class   Token
     public :
 
         Token();
-        void set_new_token(const std::string &value, int col, int line, 
+        void    set_new_token(const std::string &value, int col, int line, 
         TokenType type);
-        void display_token();
+        void    display_token();
 };
 
 

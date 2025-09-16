@@ -1,7 +1,7 @@
 # ifndef TOKENIZERERROR_HPP
 # define TOKENIZERERROR_HPP
 
-# include "Libraries.hpp"
+# include "../Libraries.hpp"
 
 enum    ErrorType
 {

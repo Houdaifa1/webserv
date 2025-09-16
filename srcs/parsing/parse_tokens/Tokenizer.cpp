@@ -1,8 +1,13 @@
-#include "../Tokenizer.hpp"
+# include "../../../includes/webserv.hpp"
 
 Tokenizer::Tokenizer(const std::string &file_name) : file_name(file_name),
                                                      index(0), col(1), line(1) {}
 
+
+std::vector<Token>  Tokenizer::get_tokens()
+{
+        return tokens;
+}
 void Tokenizer::get_config_in_str()
 {
     std::ifstream file(file_name.c_str());
