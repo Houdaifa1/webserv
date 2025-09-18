@@ -5,15 +5,11 @@
 
 class Config
 {
-    private :
+    public :
 
         std::vector<Server>     servers;
         std::vector<Directive>  globals;
     
-    public :
-       // Config();
-
-
 };
 
 

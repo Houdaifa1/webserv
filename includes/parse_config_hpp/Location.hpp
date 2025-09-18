@@ -5,16 +5,14 @@
 
 class Location
 {
-    private:
+    public:
 
-        std::string             modifier;
         std::string             path;
         std::vector<Directive>  directives;
         TrackPos                position;
     
-    public:
+   
 
-        Location();
     
 };
 

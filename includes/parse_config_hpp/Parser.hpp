@@ -19,7 +19,9 @@ class Parser
         bool is_serever_block(Token &token);
         bool is_directive(Token &token);
         bool is_known_directive(std::string &value);
-        Directive parse_directive(const std::vector<Token> &tokens, size_t &index);
+        Directive parse_directive();
+        Server parse_server();
+        Location parse_location();
 
 };
 

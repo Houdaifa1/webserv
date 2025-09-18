@@ -15,9 +15,9 @@ std::string intToString(int n)
     return str;
 }
 
-Parsererror::Parsererror(ParserErrorType type, std::string value, std::string &path, int line)
+Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &path, int line)
 {
-    std::string error_location = path + ":" + intToString(line) + "\n";
+    std::string error_location = path + " : Line " + intToString(line) + "\n";
 
     switch (type)
     {
@@ -28,8 +28,27 @@ Parsererror::Parsererror(ParserErrorType type, std::string value, std::string &p
         }
         case DirectiveNotTerminated:
         {
-            mesg = " Directive \"" + value + "\" is not terminated by \";\""
-                + " in ";
+            mesg = "Directive \"" + value + "\" is not terminated by \";\" in ";
+            break;
+        }
+        case UnexpectedEOF:
+        {
+            mesg = "Unexpected EOF in ";
+            break;
+        }
+        case ExpectBlockStarter:
+        {
+            mesg = "Expected \'{\' after \"server\" found \"" + value + "\" in ";
+            break;
+        }
+        case UnexpectedSymbol:
+        {
+            mesg = "Unexpected Symbol \"" + value + "\" in ";
+            break;
+        }
+        case UnexpectedEOFend:
+        {
+            mesg = "Unexpected EOF: expected \'}\' in ";
             break;
         }
     }

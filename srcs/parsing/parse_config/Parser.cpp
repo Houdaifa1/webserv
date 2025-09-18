@@ -8,12 +8,14 @@ Parser::Parser(const std::vector<Token> &tokens, std::string path) : tokens(toke
 bool Parser::is_known_directive(std::string &value)
 {
     const char *directives[] = {
-        "listen", "error_page", "client_max_body_size", "allowed_methods", "return",
+        "listen", "error_log", "worker_processes" ,"client_max_body_size", "allowed_methods", "return",
         "redirect", "root", "autoindex", "index", "upload_store", "cgi_pass"};
-    for (int i = 0; i < sizeof(directives); i++)
+    
+    for (int i = 0; i < sizeof(directives)/sizeof(directives[0]); i++)
     {
         if (value == directives[i])
             return true;
+           
     }
     return false;
 }
@@ -35,17 +37,14 @@ bool Parser::is_directive(Token &token)
 
 bool Parser::is_serever_block(Token &token)
 {
-    bool server = false;
-
     if (token.value == "server")
     {
-        server = true;
-        // handlle server
+        return true;
     }
-    return server;
+    return false;
 }
 
-Directive Parser::parse_directive(const std::vector<Token> &tokens, size_t &index)
+Directive Parser::parse_directive()
 {
     Directive directive;
 
@@ -54,18 +53,107 @@ Directive Parser::parse_directive(const std::vector<Token> &tokens, size_t &inde
     int col = tokens[index].col;
     directive.position.line = line;
     directive.position.col = col;
+    index++;
+    while (index < tokens.size())
+    {
+          
+        if (tokens[index].type == SYMBOL)
+        {
+            
+            if (tokens[index].value == ";")
+            {
+                index++;
+                return directive;
+            }
+            else
+                throw Parsererror(DirectiveNotTerminated, directive.name, path, line);
+        }
+        if (tokens[index].type == COMMENT)
+        {
+            index++;
+            continue;
+        }
+        directive.args.push_back(tokens[index].value);
+        index++;
+    }
+    throw Parsererror(DirectiveNotTerminated, directive.name, path, line);
+}
 
+bool is_path_in_quotes(std::string& s)
+{
+    int i = 0;
+    while (i < s.size() && (s[i] >= 9 && s[i] <= 13) || s[i] == ' ')
+    {
+        i++;
+    }
+    s.erase(0, i);
+    return true;
+}
+
+Location Parser::parse_location()
+{
+    Location location;
+
+    int col = tokens[index].col;
+    int line = tokens[index].line;
+    location.position.line = line;
+    location.position.col = col;
+    index++;
+    if (index >= tokens.size())
+        throw Parsererror(UnexpectedEOF, "", path, line);
+    if (is_path_in_quotes(tokens[index].value) || tokens[index].type != PATH)
+    {
+
+    }
+
+}
+
+Server Parser::parse_server()
+{
+    Server server;
+
+    int col = tokens[index].col;
+    int line = tokens[index].line;
+    server.position.col = col;
+    server.position.line = line;
+    index++;
+    if (index >= tokens.size())
+        throw Parsererror(UnexpectedEOF, "", path, line);
+    if (tokens[index].value != "{")
+        throw Parsererror(ExpectBlockStarter, tokens[index].value, path, line);
     index++;
     while (index < tokens.size())
     {
         if (tokens[index].type == SYMBOL)
         {
-            if (tokens[index].value != ";")
-                throw Parsererror(DirectiveNotTerminated, directive.name, path, line);
+            if (tokens[index].value == "}")
+            {
+                index++;
+                return server;
+            }
+            throw Parsererror(UnexpectedSymbol, tokens[index].value,path, tokens[index].line);
         }
-        directive.args[index] = tokens[index].value;
+        if (tokens[index].type == COMMENT)
+        {
+            index++;
+            continue;
+        }
+        if (tokens[index].value == "location")
+        {
+            Location new_location;
+            new_location = parse_location();
+            server.locations.push_back(new_location);
+            continue;
+        }
+        if (is_directive(tokens[index]))
+        {
+            Directive new_directive;
+            new_directive = parse_directive();
+            server.directives.push_back(new_directive);
+            continue;
+        }
     }
-
+    throw Parsererror(UnexpectedEOF, "", path, line);
 }
 
 int Parser::Parseall(Config &config)
@@ -74,15 +162,25 @@ int Parser::Parseall(Config &config)
     {
         while (index < tokens.size())
         {
+           
+            if (tokens[index].type == COMMENT)
+            {
+                index++;
+                continue;
+            }
             if (is_serever_block(tokens[index]))
             {
-                // parse_server
+                Server new_server;
+                new_server = parse_server();
+                config.servers.push_back(new_server);
                 continue;
             }
             if (is_directive(tokens[index]))
             {
                 Directive new_directive;
-                new_directive = parse_directive(tokens, index);
+                new_directive = parse_directive();
+                config.globals.push_back(new_directive);
+                continue;
             }
         }
     }

@@ -5,15 +5,12 @@
 
 class   Server
 {
-    private :
+    public :
 
         std::vector<Directive>  directives;
         std::vector<Location>   locations;
         TrackPos                position;
 
-    public :
-
-        Server();
 };
 
 

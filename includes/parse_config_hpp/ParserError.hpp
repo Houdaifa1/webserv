@@ -7,6 +7,10 @@ enum ParserErrorType
 {
     UnknownDirective,
     DirectiveNotTerminated,
+    UnexpectedEOF,
+    UnexpectedEOFend,
+    ExpectBlockStarter,
+    UnexpectedSymbol,
 };
 
 class Parsererror
