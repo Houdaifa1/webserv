@@ -8,7 +8,7 @@ enum    TokenType
     UNDEFINED,
     IDENTIFIER,
     STRING,
-    SYMBOL,
+    SYMBOL,//
     NUMBER,
     SIZE,
     PATH,
@@ -19,15 +19,12 @@ enum    TokenType
 
 class   Token
 {
-    private :
+    public :
 
         TokenType   type;
         std::string value;
         int         line;
         int         col;
-    
-    public :
-
         Token();
         void    set_new_token(const std::string &value, int col, int line, 
         TokenType type);
