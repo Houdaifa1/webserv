@@ -2,7 +2,6 @@
 # define PARSER_HPP
 
 # include "Config.hpp"
-# include "../token_hpp/Token.hpp"
 
 class Parser
 {
@@ -11,13 +10,16 @@ class Parser
 
         std::vector<Token>  tokens;
         size_t              index;
+        std::string         path;
 
     public :
 
-        Parser(const std::vector<Token> &tokens);
+        Parser(const std::vector<Token> &tokens, std::string path);
         int Parseall(Config &config);
-        // bool is_directive(Token &token);
-        Directive parse_directive(const std::vector<Token> &tokens, size_t index);
+        bool is_serever_block(Token &token);
+        bool is_directive(Token &token);
+        bool is_known_directive(std::string &value);
+        Directive parse_directive(const std::vector<Token> &tokens, size_t &index);
 
 };
 

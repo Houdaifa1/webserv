@@ -12,6 +12,8 @@ void Token::set_new_token(const std::string &value,
     this->type = type;
 }
 
+
+
 const char* tokenTypeToString(TokenType type)
 {
     switch(type)

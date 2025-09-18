@@ -18,6 +18,7 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(CNF_SRC_DIR)/Server.cpp    \
               $(CNF_SRC_DIR)/Location.cpp   \
               $(CNF_SRC_DIR)/Directive.cpp   \
+              $(CNF_SRC_DIR)/ParserError.cpp  \
               
 
 all: $(NAME)
