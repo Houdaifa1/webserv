@@ -82,16 +82,6 @@ bool    Tokenizer::is_location_modifier(std::string &value)
         value += c;
         index++;
         col++;
-        if (index < config.size())
-            c = config[index];
-        else
-            return loc_mod;
-        if (c == '*')
-        {
-            value += c;
-            index++;
-            col++;
-        }
     }
     return loc_mod;
 }
@@ -203,7 +193,7 @@ bool Tokenizer::consume_digit()
 
 bool Tokenizer::consume_path()
 {
-    if (c == '/' || c == '.')
+    if (c == '/')
     {
         int start_col = col;
         std::string value;

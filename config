@@ -1,66 +1,12 @@
-# Global settings
-worker_processes 4;
-error_log "/var/log/nginx/error.log" info;
-
-server {;
-    listen 8080;
-    server_name "example.com"  www.example.com;
-    root '/var/www/example';
-    client_max_body_size 10M;
-    index index.html 'index.htm' "" 'index.nginx-debian.html' "";
-
-    location /images/ {
-        autoindex on;
-        charset "utf-8";
-        alias '/static/img/';
-    }
-
-    location = /404.html {
-        root '/var/www/errors';
-        error_page 404 /404.html;
-        return 404;
-    }
-
-    location ~*  {
-        fastcgi_pass "127.0.0.1:9000";
-        fastcgi_param SCRIPT_FILENAME "/var/www" '/';
-        fastcgi_param QUERY_STRING;
-        fastcgi_buffer_size 128k;
-        fastcgi_buffers 4 64k;
-        # Example of adjacent quoted strings:
-        fastcgi_param LONG_STRING "A long part " "added" ' to the value';
-    }
-
-    location /download/ {
-        valid_referers none blocked server_names .example.com;
-        if invalid_referer {
-            # Adjacent string for URL
-            return 403 "Forbidden: " "bad referer";
-        }
-        rewrite "^/(download/.*)/mp3/(.*)\..*$ /$1/mp3/$2.mp3" break;
-        root '/spool/www';
-        access_log "/var/log/nginx/download.log";
-        # Semicolons inside quoted string:
-        add_header "X-Notes" "semicolon ; inside";
-    }
-}
+# Global settings ##
+worker_processes dasdasd ;
 
 server {
-    listen 443 ssl;
-    server_name api.example.com;
-    ssl_certificate "/etc/ssl/api.crt";
-    ssl_certificate_key '/etc/ssl/api.key';
-    location /api/v1/ {
-        proxy_pass "http://127.0.0.1:3000/";
-        proxy_set_header Host ;
-        proxy_set_header X-Real-IP ;
-        proxy_set_header Authorization "Bearer " 'TokenValue123' "";
-    }
-}
 
-# Unclosed quote case (should error!)
-server {
-    listen 8081;
-    root "/var/unclosed"
-    index index.html;
+worker_processes dasdasd ;
+worker_processes dasdasd *;
+worker_processes dasdasd ;
+
+
+
 }

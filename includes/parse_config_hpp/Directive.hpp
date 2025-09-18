@@ -18,8 +18,6 @@ class Directive
         std::vector<std::string>    args;
         TrackPos                    position;
 
-        Directive();
-
 };
 
 # endif

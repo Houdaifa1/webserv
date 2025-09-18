@@ -8,7 +8,7 @@ enum    TokenType
     UNDEFINED,
     IDENTIFIER,
     STRING,
-    SYMBOL,//
+    SYMBOL,
     NUMBER,
     SIZE,
     PATH,
