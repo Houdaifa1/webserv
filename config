@@ -1,12 +1,50 @@
-# Global settings ##
-worker_processes dasdasd ;
+worker_processes 4;
+error_log /var/log/webserv/error.log info;
 
 server {
+    listen 8080;
+    server_name example.com;
 
-worker_processes dasdasd ;
-worker_processes dasdasd *;
-worker_processes dasdasd ;
+    client_max_body_size 20M;
+    error_page 404 /404.html;
 
+    root /var/www/example;
 
+    location / {
+        allowed_methods GET POST DELETE;
+        index index.html index.htm;
+        autoindex off;
+    }
 
+    location /upload/ {
+        allowed_methods POST;
+        autoindex on;
+        upload_store /var/www/uploads;
+    }
+
+    location / {
+       
+        cgi_path /usr/bin/php-cgi;
+    }
+
+    location /redirect-44me/ {
+        return 301 "http://www.example.com/";
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name secure.example.com;
+
+    root /etc/ssl/certs/example.crt;
+    root /etc/ssl/private/example.key;
+
+    root /var/www/secure;
+    client_max_body_size 10M;
+
+    location / {
+        allowed_methods GET;
+        index index.html;
+        autoindex on;
+    }
 }

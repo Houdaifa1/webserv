@@ -11,6 +11,9 @@ enum ParserErrorType
     UnexpectedEOFend,
     ExpectBlockStarter,
     UnexpectedSymbol,
+    ExpectedPath,
+    NestedBlocks,
+    TopBolockLow,
 };
 
 class Parsererror
