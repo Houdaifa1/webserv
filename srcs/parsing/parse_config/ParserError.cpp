@@ -23,7 +23,7 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
     {
         case UnknownDirective:
         {
-            mesg = " Expected directive name but found \"" + value + "\" in ";
+            mesg = "Expected directive name but found \"" + value + "\" in ";
             break;
         }
         case DirectiveNotTerminated:
@@ -38,7 +38,7 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
         }
         case ExpectBlockStarter:
         {
-            mesg = "Expected \'{\' after \"server\" found \"" + value + "\" in ";
+            mesg = "Expected \'{\' found \"" + value + "\" in ";
             break;
         }
         case UnexpectedSymbol:
@@ -49,6 +49,21 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
         case UnexpectedEOFend:
         {
             mesg = "Unexpected EOF: expected \'}\' in ";
+            break;
+        }
+        case ExpectedPath:
+        {
+            mesg = "Expected \'Path\' after \"location\" found \"" + value + "\" in ";
+            break;
+        }
+        case NestedBlocks:
+        {
+            mesg = "Unexpected ‘" + value + "’ directive inside a " + value + " block in ";
+            break;
+        }
+        case TopBolockLow:
+        {
+            mesg = "Unexpected ‘" + value + "’ directive inside a location block in ";
             break;
         }
     }

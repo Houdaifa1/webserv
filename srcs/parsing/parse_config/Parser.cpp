@@ -9,7 +9,7 @@ bool Parser::is_known_directive(std::string &value)
 {
     const char *directives[] = {
         "listen", "error_log", "worker_processes" ,"client_max_body_size", "allowed_methods", "return",
-        "redirect", "root", "autoindex", "index", "upload_store", "cgi_pass"};
+        "redirect", "root","error_page", "autoindex", "index", "server_name", "cgi_path", "upload_store"};
     
     for (int i = 0; i < sizeof(directives)/sizeof(directives[0]); i++)
     {
@@ -79,7 +79,7 @@ Directive Parser::parse_directive()
     throw Parsererror(DirectiveNotTerminated, directive.name, path, line);
 }
 
-bool is_path_in_quotes(std::string& s)
+bool is_path_in_quotes(std::string s)
 {
     int i = 0;
     while (i < s.size() && (s[i] >= 9 && s[i] <= 13) || s[i] == ' ')
@@ -87,7 +87,9 @@ bool is_path_in_quotes(std::string& s)
         i++;
     }
     s.erase(0, i);
-    return true;
+    if (s[0] == '/')
+        return true;
+    return false;
 }
 
 Location Parser::parse_location()
@@ -101,11 +103,47 @@ Location Parser::parse_location()
     index++;
     if (index >= tokens.size())
         throw Parsererror(UnexpectedEOF, "", path, line);
-    if (is_path_in_quotes(tokens[index].value) || tokens[index].type != PATH)
+    if (!is_path_in_quotes(tokens[index].value))
     {
-
+        if (tokens[index].type != PATH)
+            throw Parsererror(ExpectedPath, tokens[index].value, path, tokens[index].line);
     }
-
+    location.path = tokens[index].value;
+    index++;
+    if (index >= tokens.size())
+        throw Parsererror(UnexpectedEOF, "", path, line);
+    if (tokens[index].value != "{")
+        throw Parsererror(ExpectBlockStarter, tokens[index].value, path, line);
+    index++;
+    while (index < tokens.size())
+    {
+        if (tokens[index].type == SYMBOL)
+        {
+            if (tokens[index].value == "}")
+            {
+                index++;
+                return location;
+            }
+            throw Parsererror(UnexpectedSymbol, tokens[index].value, path, tokens[index].line);
+        }
+        if (tokens[index].type == COMMENT)
+        {
+            index++;
+            continue;
+        }
+        if (tokens[index].value == "location")
+            throw Parsererror(NestedBlocks, tokens[index].value, path, tokens[index].line);
+        if (tokens[index].value == "server")
+            throw Parsererror(TopBolockLow, tokens[index].value, path, tokens[index].line);
+        if (is_directive(tokens[index]))
+        {
+            Directive new_directive;
+            new_directive = parse_directive();
+            location.directives.push_back(new_directive);
+            continue;
+        }
+    }
+     throw Parsererror(UnexpectedEOFend, "", path, tokens[index - 1].line + 1);
 }
 
 Server Parser::parse_server()
@@ -120,7 +158,7 @@ Server Parser::parse_server()
     if (index >= tokens.size())
         throw Parsererror(UnexpectedEOF, "", path, line);
     if (tokens[index].value != "{")
-        throw Parsererror(ExpectBlockStarter, tokens[index].value, path, line);
+        throw Parsererror(ExpectBlockStarter, tokens[index].value, path, tokens[index].line);
     index++;
     while (index < tokens.size())
     {
@@ -145,6 +183,8 @@ Server Parser::parse_server()
             server.locations.push_back(new_location);
             continue;
         }
+        if (tokens[index].value == "server")
+            throw Parsererror(NestedBlocks, tokens[index].value,path, tokens[index].line);
         if (is_directive(tokens[index]))
         {
             Directive new_directive;
@@ -153,7 +193,7 @@ Server Parser::parse_server()
             continue;
         }
     }
-    throw Parsererror(UnexpectedEOF, "", path, line);
+    throw Parsererror(UnexpectedEOFend, "", path, tokens[index - 1].line + 1);
 }
 
 int Parser::Parseall(Config &config)
