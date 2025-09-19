@@ -25,7 +25,7 @@ int Tokenizer::is_only_digits(const std::string &value)
 {
     unsigned char x;
 
-    for (int i = 0; i < value.size(); i++)
+    for (size_t i = 0; i < value.size(); i++)
     {
         x = value[i];
         if (!std::isdigit(x))
@@ -38,7 +38,7 @@ int Tokenizer::is_size_digit(const std::string &value, const std::string &allowe
 {
     unsigned char x;
 
-    int i = 0;
+    size_t i = 0;
     int check = 0;
     while (i < value.size() - 1)
     {
@@ -48,11 +48,10 @@ int Tokenizer::is_size_digit(const std::string &value, const std::string &allowe
         i++;
     }
     x = value[i];
-    for (int i = 0; i < allowed.size(); i++)
+    for (size_t i = 0; i < allowed.size(); i++)
     {
         if (x == allowed[i])
         {
-
             check = 1;
         }
     }
@@ -255,7 +254,6 @@ bool Tokenizer::consume_quotes()
         if (c == '\'' || c == '\"')
         {
             char quote = c;
-            
             index++;
             col++;
             start_col = col;
@@ -263,7 +261,6 @@ bool Tokenizer::consume_quotes()
                 c = config[index];
             else
                 throw TokenizerError(UnclosedQuote, col, line, quote);
-            
             while (index < config.size())
             {
                 if (c == '\\')
@@ -361,7 +358,7 @@ int Tokenizer::Tokenizeall()
 
 void Tokenizer::display_config()
 {
-    for (int i = 0; i < tokens.size(); i++)
+    for (size_t i = 0; i < tokens.size(); i++)
     {
         tokens[i].display_token();
     }

@@ -10,6 +10,7 @@ class Config
         std::vector<Server>     servers;
         std::vector<Directive>  globals;
     
+        void display_config();
 };
 
 

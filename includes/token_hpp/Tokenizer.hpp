@@ -11,7 +11,7 @@ class Tokenizer
         std::string         file_name;
         std::string         config;
         std::vector<Token>  tokens;
-        int                 index;
+        size_t              index;
         int                 col;
         int                 line;
         char                c;

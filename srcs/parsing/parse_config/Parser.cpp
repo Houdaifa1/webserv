@@ -11,7 +11,7 @@ bool Parser::is_known_directive(std::string &value)
         "listen", "error_log", "worker_processes" ,"client_max_body_size", "allowed_methods", "return",
         "redirect", "root","error_page", "autoindex", "index", "server_name", "cgi_path", "upload_store"};
     
-    for (int i = 0; i < sizeof(directives)/sizeof(directives[0]); i++)
+    for (size_t i = 0; i < sizeof(directives)/sizeof(directives[0]); i++)
     {
         if (value == directives[i])
             return true;
@@ -81,8 +81,8 @@ Directive Parser::parse_directive()
 
 bool is_path_in_quotes(std::string s)
 {
-    int i = 0;
-    while (i < s.size() && (s[i] >= 9 && s[i] <= 13) || s[i] == ' ')
+    size_t i = 0;
+    while (i < s.size() && ((s[i] >= 9 && s[i] <= 13) || s[i] == ' '))
     {
         i++;
     }

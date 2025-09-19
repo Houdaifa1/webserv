@@ -1,7 +1,7 @@
 NAME        = webserv
 
 CC          = c++
-CFLAGS      = -Wall -Wextra -Werror -w -std=c++98
+CFLAGS      = -Wall -Wextra -Werror  -std=c++98
 
 SRC_DIR     = srcs
 PARS_DIR    = srcs/parsing
@@ -13,12 +13,9 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(TKN_SRC_DIR)/Token.cpp        \
               $(TKN_SRC_DIR)/Tokenizer.cpp     \
               $(TKN_SRC_DIR)/TokenizerError.cpp \
-              $(CNF_SRC_DIR)/Config.cpp  \
-              $(CNF_SRC_DIR)/Parser.cpp   \
-              $(CNF_SRC_DIR)/Server.cpp    \
-              $(CNF_SRC_DIR)/Location.cpp   \
-              $(CNF_SRC_DIR)/Directive.cpp   \
-              $(CNF_SRC_DIR)/ParserError.cpp  \
+              $(CNF_SRC_DIR)/Config.cpp    \
+              $(CNF_SRC_DIR)/Parser.cpp     \
+              $(CNF_SRC_DIR)/ParserError.cpp \
               
 
 all: $(NAME)
