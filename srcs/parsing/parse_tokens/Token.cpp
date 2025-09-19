@@ -1,6 +1,6 @@
 # include "../../../includes/webserv.hpp"
 
-Token::Token() : col(1), line(1), type(UNDEFINED) {}
+Token::Token() : type(UNDEFINED), line(1), col(1) {}
 
 
 void Token::set_new_token(const std::string &value,
@@ -28,6 +28,7 @@ const char* tokenTypeToString(TokenType type)
         case COMMENT:           return "COMMENT";
         case LOCATION_MODIFIER: return "LOCATION_MODIFIER";
     }
+    return "UNDEFINED";
 }
 
 
