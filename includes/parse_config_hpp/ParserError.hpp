@@ -14,6 +14,13 @@ enum ParserErrorType
     ExpectedPath,
     NestedBlocks,
     TopBolockLow,
+    NoServerFound,
+    GlobalDirective,
+    InvalidNumberArgs,
+    InvalidArgument,
+    InvalidPortNumber,
+    MissingAddress,
+    InvalidAddress,
 };
 
 class Parsererror

@@ -12,6 +12,6 @@ int main (int argc, char **argv)
         return 1;
     }
     exit_code = get_config(argv[1], config);
-    config.display_config();
+    // config.display_config();
     return (exit_code);
 }
