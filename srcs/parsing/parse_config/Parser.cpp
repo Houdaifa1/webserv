@@ -10,12 +10,10 @@ bool Parser::is_known_directive(std::string &value)
     const char *directives[] = {
         "listen", "error_log", "worker_processes" ,"client_max_body_size", "allowed_methods", "return",
         "redirect", "root","error_page", "autoindex", "index", "server_name", "cgi_path", "upload_store"};
-    
     for (size_t i = 0; i < sizeof(directives)/sizeof(directives[0]); i++)
     {
         if (value == directives[i])
             return true;
-           
     }
     return false;
 }
@@ -196,6 +194,30 @@ Server Parser::parse_server()
     throw Parsererror(UnexpectedEOFend, "", path, tokens[index - 1].line + 1);
 }
 
+void Parser::check_directive(Directive &directive)
+{
+    int check_listen = 0;
+    if (directive.name == "listen")
+    {
+        parse_listen(directive, path);
+        check_listen = 1;
+    }
+    
+}
+
+void Parser::validate_config(Config &config)
+{
+    if (config.servers.size() < 1)
+        throw Parsererror(NoServerFound, "", path, 0);
+    if (config.globals.size() >= 1)
+        throw Parsererror(GlobalDirective, config.globals[0].name, path,config.globals[0].position.line);
+    for (size_t i = 0; i < config.servers.size(); i++)
+    {
+        for (size_t j = 0; j < config.servers[i].directives.size(); i++)
+            check_directive(config.servers[i].directives[j]);
+    }
+}
+
 int Parser::Parseall(Config &config)
 {
     try
@@ -223,12 +245,12 @@ int Parser::Parseall(Config &config)
                 continue;
             }
         }
+        validate_config(config);
     }
     catch (Parsererror &error)
     {
         std::cerr << error.mesg;
         return 1;
     }
-
     return 0;
 }

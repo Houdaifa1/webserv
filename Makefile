@@ -13,9 +13,10 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(TKN_SRC_DIR)/Token.cpp        \
               $(TKN_SRC_DIR)/Tokenizer.cpp     \
               $(TKN_SRC_DIR)/TokenizerError.cpp \
-              $(CNF_SRC_DIR)/Config.cpp    \
-              $(CNF_SRC_DIR)/Parser.cpp     \
-              $(CNF_SRC_DIR)/ParserError.cpp \
+              $(CNF_SRC_DIR)/Config.cpp          \
+              $(CNF_SRC_DIR)/Parser.cpp           \
+              $(CNF_SRC_DIR)/ParserError.cpp       \
+              $(CNF_SRC_DIR)/parse_directives.cpp   \
               
 
 all: $(NAME)
