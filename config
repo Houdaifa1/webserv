@@ -1,7 +1,7 @@
 
 
 server {
-    listen 454510;
+    listen 5050;
     server_name example.com;
 
     client_max_body_size 20M;
@@ -35,7 +35,7 @@ server {
 
 
 server {
-    listen 443 jkhjk ;
+    listen 4.4.3.0:55  ;
     server_name secure.example.com;
 
     root /etc/ssl/certs/example.crt;

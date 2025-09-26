@@ -21,6 +21,7 @@ enum ParserErrorType
     InvalidPortNumber,
     MissingAddress,
     InvalidAddress,
+    MissingListen,
 };
 
 class Parsererror

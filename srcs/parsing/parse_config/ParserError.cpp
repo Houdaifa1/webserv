@@ -78,7 +78,7 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
         }
         case InvalidNumberArgs:
         {
-            mesg = "Error: directive " + value + " expects exactly 1 argument in ";
+            mesg = "Error: directive " + value + " expects exactly 1 argument in #";
             break;
         }
         case InvalidArgument:
@@ -100,6 +100,11 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
         {
             mesg = "Error: invalid address <" + value + "> for listen directive in ";
             break;
+        }
+        case MissingListen:
+        {
+            mesg = "Error: missing required \"listen\" directive for server in " + path  + "\n";
+            return ;
         }
     }
     mesg += error_location;

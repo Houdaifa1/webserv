@@ -17,23 +17,33 @@ bool is_number(const std::string &s, size_t &port_num)
 bool is_address(const std::string &s)
 {
     int counter = 0;
-    size_t byte = 0;
-    if (s.empty())
-        return false;
+    int byte = 0;
+    int digits = 0;
+
     for (size_t i = 0; i < s.size(); i++)
     {
-        byte = byte * 10 + (s[i] - '0');
-        if (!isdigit(s[i]))
+        char c = s[i];
+        if (isdigit(c))
         {
-            if (s[i] != '.')
-                return false;
+            byte = byte * 10 + (c - '0');
+            digits++;
             if (byte > 255)
                 return false;
-            byte = 0;
-            counter++;
+            if (digits > 3)
+                return false;
         }
+        else if (c == '.')
+        {
+            if (digits == 0)
+                return false;
+            counter++;
+            byte = 0;
+            digits = 0;
+        }
+        else
+            return false;
     }
-    if (counter != 3)
+    if (digits == 0 || byte > 255 || counter != 3)
         return false;
     return true;
 }
@@ -41,6 +51,7 @@ bool is_address(const std::string &s)
 void parse_listen(Directive &directive, std::string &path)
 {
     size_t port_num = 0;
+    std::string port;
     if (directive.args.size() != 1)
         throw Parsererror(InvalidNumberArgs, directive.name, path, directive.position.line);
 
@@ -52,7 +63,9 @@ void parse_listen(Directive &directive, std::string &path)
         if (!(port_num >= 1 && port_num <= 65535))
             throw Parsererror(InvalidPortNumber, directive.args[0], path, directive.position.line);
         std::string address = "0.0.0.0:";
-        directive.args[0] = address + directive.args[0];
+        port = directive.args[0];
+        directive.args[0] = address;
+        directive.args.push_back(port);
     }
     else
     {
@@ -61,14 +74,12 @@ void parse_listen(Directive &directive, std::string &path)
             throw Parsererror(MissingAddress, directive.args[0], path, directive.position.line);
         if (!is_address(address))
             throw Parsererror(InvalidAddress, address, path, directive.position.line);
-        std::string port = directive.args[0].substr(del_pos + 1);
+        port = directive.args[0].substr(del_pos + 1);
         if (!is_number(port, port_num))
             throw Parsererror(InvalidArgument, directive.name, path, directive.position.line);
         if (!(port_num >= 1 && port_num <= 65535))
             throw Parsererror(InvalidPortNumber, port, path, directive.position.line);
-        directive.args[0] = address + ":" + port;
+        directive.args[0] = address;
+        directive.args.push_back(port);
     }
 }
-
-// ":5050"
-// 8080     10.0.0.0  10.0.0  shsdjfhsdjkf 1010101010
