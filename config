@@ -35,7 +35,7 @@ server {
 
 
 server {
-    listen 4.4.3.0:55  ;
+    listen 0.0.0.0:55  ;
     server_name secure.example.com;
 
     root /etc/ssl/certs/example.crt;

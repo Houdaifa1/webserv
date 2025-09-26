@@ -12,6 +12,8 @@ int main (int argc, char **argv)
         return 1;
     }
     exit_code = get_config(argv[1], config);
-    // config.display_config();
+    if (exit_code != 0) return (exit_code);
+    ServerCore servercore(config);
+    
     return (exit_code);
 }
