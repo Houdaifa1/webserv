@@ -194,15 +194,13 @@ Server Parser::parse_server()
     throw Parsererror(UnexpectedEOFend, "", path, tokens[index - 1].line + 1);
 }
 
-void Parser::check_directive(Directive &directive)
+void Parser::check_directive(Directive &directive, bool &contain_listen)
 {
-    int check_listen = 0;
     if (directive.name == "listen")
     {
         parse_listen(directive, path);
-        check_listen = 1;
+        contain_listen = true;
     }
-    
 }
 
 void Parser::validate_config(Config &config)
@@ -213,8 +211,13 @@ void Parser::validate_config(Config &config)
         throw Parsererror(GlobalDirective, config.globals[0].name, path,config.globals[0].position.line);
     for (size_t i = 0; i < config.servers.size(); i++)
     {
-        for (size_t j = 0; j < config.servers[i].directives.size(); i++)
-            check_directive(config.servers[i].directives[j]);
+        bool contain_listen = false;
+        for (size_t j = 0; j < config.servers[i].directives.size(); j++)
+        {
+            check_directive(config.servers[i].directives[j], contain_listen);
+        }
+        if (!contain_listen)
+            throw Parsererror(MissingListen, "", path, 0);
     }
 }
 
