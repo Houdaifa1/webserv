@@ -93,12 +93,12 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
         }
         case MissingAddress:
         {
-            mesg = "Error: Listen directive missing address before port in ";
+            mesg = "Error: Listen directive missing ip address before port in ";
             break;
         }
         case InvalidAddress:
         {
-            mesg = "Error: invalid address <" + value + "> for listen directive in ";
+            mesg = "Error: invalid ip address <" + value + "> for listen directive in ";
             break;
         }
         case MissingListen:
