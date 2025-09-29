@@ -9,7 +9,7 @@ class Config
 
         std::vector<Server>                         servers;
         std::vector<Directive>                      globals;
-        std::vector<std::pair<std::string, int>>    pairs;
+        std::vector< std::pair<std::string, int> >  pairs;
     
         void display_config();
 };

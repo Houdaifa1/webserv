@@ -2,14 +2,17 @@
 # define SERVERCORE_HPP
 
 # include "../parse_config_hpp/Parser.hpp"
+# include "./CoreError.hpp"
 
 class ServerCore
 {
     public :
-        const Config &config;
+        const Config                                &config;
+        std::map<std::pair<std::string, int>, int>  listen_sockets;
+
 
         ServerCore(const Config &config);
-        void init_sockets();
+        int init_sockets();
 
 };
 

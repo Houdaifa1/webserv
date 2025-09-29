@@ -199,7 +199,7 @@ void Parser::check_directive(Directive &directive, bool &contain_listen, Config 
     if (directive.name == "listen")
     {
         parse_listen(directive, path);
-        std::pair<std::string, int> pair = std::make_pair(directive.args[0], std::atoi(directive.args[1].c_str())); 
+        std::pair<std::string, int> pair = std::make_pair(directive.args[0], atoi(directive.args[1].c_str())); 
         config.pairs.push_back(pair);
         contain_listen = true;
     }
