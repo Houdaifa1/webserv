@@ -14,6 +14,7 @@ int main (int argc, char **argv)
     exit_code = get_config(argv[1], config);
     if (exit_code != 0) return (exit_code);
     ServerCore servercore(config);
+    servercore.init_sockets();
     
     return (exit_code);
 }

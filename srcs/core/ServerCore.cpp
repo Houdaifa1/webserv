@@ -25,7 +25,7 @@ int ServerCore::init_sockets()
                 addr.sin_family = AF_INET;
                 addr.sin_port = htons(config.pairs[i].second);
                 addr.sin_addr.s_addr = inet_addr(config.pairs[i].first.c_str());
-                if (bind(socket_fd,  (struct sockaddr*)&addr, sizeof(addr)) < 0)
+                if (bind(socket_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
                 {
                     throw CoreError("bind()", errno, strerror(errno));
                 }
@@ -34,6 +34,17 @@ int ServerCore::init_sockets()
                     throw CoreError("listen()", errno, strerror(errno));
                 }
                 listen_sockets.insert(std::make_pair(config.pairs[i], socket_fd));
+                int client_socket;
+                int addr_len = sizeof(addr);
+                std::cout << "\n\n\n Waiting for clients \n\n\n";
+                if ((client_socket = accept(socket_fd, (struct sockaddr *)&addr, (socklen_t *)&addr_len)) < 0)
+                {
+                    throw CoreError("accept()", errno, strerror(errno));
+                }
+                char buffer[30000] = {0};
+                read(client_socket, buffer, 30000);
+                printf("%s\n", buffer);
+                close(client_socket);
             }
         }
     }
