@@ -1,22 +1,11 @@
 # include "../../../includes/webserv.hpp"
 
 
-std::string TokenizerError::intToString(int n)
-{
-    if (n == 0) return "0";
-    std::string str;
-    while (n > 0) {
-        char digit = '0' + (n % 10);
-        str = digit + str; // prepend the digit
-        n /= 10;
-    }
-    return str;
-}
 
 TokenizerError::TokenizerError(ErrorType type, int col, int line, char badchar)
 {
-    std::string position = "[line " + intToString(line) + " , col " +
-        intToString(col) + "] ";
+    std::string position = "[line " + intTo_String(line) + " , col " +
+        intTo_String(col) + "] ";
     switch (type)
     {
         case FileNotFound:

@@ -11,8 +11,6 @@ class CoreError
         std::string mesg;
 
         CoreError(std::string what_failed, int erno_value, std::string error_msg);
-
-
 };
 
 

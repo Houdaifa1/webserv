@@ -1,23 +1,9 @@
 # include "../../../includes/webserv.hpp"
 
 
-std::string intToString(int n)
-{
-    if (n == 0)     
-        return "0";
-    std::string str;
-    while (n > 0)
-    {
-        char digit = '0' + (n % 10);
-        str = digit + str;
-        n /= 10;
-    }
-    return str;
-}
-
 Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &path, int line)
 {
-    std::string error_location = path + " : Line " + intToString(line) + "\n";
+    std::string error_location = path + " : Line " + intTo_String(line) + "\n";
 
     switch (type)
     {
