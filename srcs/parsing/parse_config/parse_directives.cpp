@@ -62,7 +62,7 @@ void parse_listen(Directive &directive, std::string &path)
             throw Parsererror(InvalidArgument, directive.name, path, directive.position.line);
         if (!(port_num >= 1 && port_num <= 65535))
             throw Parsererror(InvalidPortNumber, directive.args[0], path, directive.position.line);
-        std::string address = "0.0.0.0:";
+        std::string address = "0.0.0.0";
         port = directive.args[0];
         directive.args[0] = address;
         directive.args.push_back(port);

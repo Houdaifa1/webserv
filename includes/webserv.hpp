@@ -7,5 +7,7 @@
 
 int     get_config(char *file_name, Config  &config);
 void    parse_listen(Directive &directive, std::string &path);
+int     startserver(const Config &config);
+std::string intTo_String(int n);
 
 # endif
