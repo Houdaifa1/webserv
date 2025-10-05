@@ -9,13 +9,13 @@ TKN_SRC_DIR    = srcs/parsing/parse_tokens
 CNF_SRC_DIR    = srcs/parsing/parse_config
 CORE_SRC_DIR   = srcs/core
 HELP_FUNCS_DIR = srcs/helper_funcs
+HTTP_SRC_DIR   = srcs/http
 
 SRC         = $(SRC_DIR)/main.cpp           \
               $(PARS_DIR)/get_cnf.cpp        \
               $(TKN_SRC_DIR)/Token.cpp        \
               $(TKN_SRC_DIR)/Tokenizer.cpp     \
               $(TKN_SRC_DIR)/TokenizerError.cpp \
-              $(HELP_FUNCS_DIR)/into_string.cpp  \
               $(CNF_SRC_DIR)/Config.cpp        \
               $(CNF_SRC_DIR)/Parser.cpp         \
               $(CNF_SRC_DIR)/ParserError.cpp     \
@@ -23,6 +23,10 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(CORE_SRC_DIR)/CoreError.cpp \
               $(CORE_SRC_DIR)/ServerCore.cpp \
               $(CORE_SRC_DIR)/StartServer.cpp \
+              $(HTTP_SRC_DIR)/HttpRequest.cpp  \
+              $(HELP_FUNCS_DIR)/into_string.cpp \
+              $(HELP_FUNCS_DIR)/remove_white_spaces.cpp \
+
               
 all: $(NAME)
 
