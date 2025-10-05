@@ -70,8 +70,8 @@ bool parse_headers(std::string &request, size_t &index, HttpRequest &req)
             return false;
         std::string key = line.substr(0, sep);
         std::string value = line.substr(sep + 1);
-        ft_remove_whitespaces(value);
         ft_remove_whitespaces(key);
+        ft_remove_whitespaces(value);
         if (key.empty())
             return false;
         req.set_headers(key, value);
@@ -86,12 +86,16 @@ bool parse_headers(std::string &request, size_t &index, HttpRequest &req)
 RequestResult parse_body(std::string &request, size_t &index, HttpRequest &req)
 {
     std::string key = "Content-Length";
+
+
     std::map<std::string, std::string>::iterator it = req.get_headers().find(key);
+
+    std::string length = it->second;
     if (it == req.get_headers().end())
         return RequestResult::SUCCESS;
 
-    size_t body_length = (size_t)atoi(it->second.c_str());
-    if (body_length == 0 && it->second != "0")
+    size_t body_length = (size_t)atoi(length.c_str());
+    if (body_length == 0 && length != "0")
         return RequestResult::ERROR;
     if (request.size() - index < body_length)
         return RequestResult::INCOMPLETE;
@@ -114,3 +118,27 @@ RequestResult parse_http_request(std::string request, HttpRequest &req)
     index += 2;
     return(parse_body(request, index, req));
 }
+
+
+
+// int main ()
+// {
+
+//     std::string request = "GET /index.html HTTP/1.1\r\n"
+//                       "Host: www.example.com\r\n"
+//                       "Connection: keep-alive\r\n"
+//                       "Content-Length: 0\r\n"
+//                       "\r\n\r\n"
+//                       "Hello";
+//     RequestResult result = parse_http_request(request,req);
+//     std::cout << "Method : " << req.get_httpmethod() << std::endl;
+//     std::cout << "Path : " << req.get_requestpath() << std::endl;
+//     std::cout << "Version : " << req.get_httpversion() << std::endl;
+//     std::map<std::string, std::string> map = req.get_headers();
+//     std::cout << "\n    Headers\n" <<  std::endl;
+//     for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); it++)
+//     {
+//         std::cout << it->first << "   :   " <<  it->second << std::endl;
+//     }
+//     std::cout << "\n    Body\n" << std::endl << req.get_body() << std::endl;
+// }
