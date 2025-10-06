@@ -89,13 +89,22 @@ void EventLoop::handle_client(int client_fd)
         std::cout << "Path: " << req.get_requestpath() << std::endl;
         std::cout << "Version: " << req.get_httpversion() << std::endl;
 
-        // send(client_fd, response.c_str(), response.size(), 0);
+        std::string response =
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Length: 11\r\n"
+            "Content-Type: text/plain\r\n"
+            "\r\n"
+            "Hello nirou";
+        send(client_fd, response.c_str(), response.size(), 0);
+        // todo: ip and port of each request client 
+        // object of request and serverCore 
     }
     else if (result == INCOMPLETE)
     {
         std::cout << "Incomplete request from client " << client_fd << std::endl;
+        // todo: i
     }
-    else
+    else 
     {
         std::cout << "Bad request from client " << client_fd << std::endl;
         std::string response =
@@ -105,6 +114,7 @@ void EventLoop::handle_client(int client_fd)
         send(client_fd, response.c_str(), response.size(), 0);
         close(client_fd);
     }
+    
 }
 
 void EventLoop::run()

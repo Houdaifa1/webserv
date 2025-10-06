@@ -12,6 +12,7 @@ class EventLoop
         int epoll_fd;
         ServerCore &server;
         std::set<int> listening_fds;
+        std::map<int, std::string> client_buffers;
 
     public:
         EventLoop(ServerCore &srv);
