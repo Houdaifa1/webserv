@@ -1,7 +1,7 @@
 NAME        = webserv
 
 CC          = c++
-CFLAGS      = -Wall -Wextra -Werror -std=c++98
+CFLAGS      = -Wall -Wextra -Werror -std=c++11
 
 SRC_DIR        = srcs
 PARS_DIR       = srcs/parsing
@@ -10,6 +10,7 @@ CNF_SRC_DIR    = srcs/parsing/parse_config
 CORE_SRC_DIR   = srcs/core
 HELP_FUNCS_DIR = srcs/helper_funcs
 HTTP_SRC_DIR   = srcs/http
+MULTIPLEXING = srcs/multiplexing
 
 SRC         = $(SRC_DIR)/main.cpp           \
               $(PARS_DIR)/get_cnf.cpp        \
@@ -24,8 +25,10 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(CORE_SRC_DIR)/ServerCore.cpp \
               $(CORE_SRC_DIR)/StartServer.cpp \
               $(HTTP_SRC_DIR)/HttpRequest.cpp  \
+              $(HTTP_SRC_DIR)/parse_http_request.cpp  \
               $(HELP_FUNCS_DIR)/into_string.cpp \
               $(HELP_FUNCS_DIR)/remove_white_spaces.cpp \
+              $(MULTIPLEXING)/EventLoop.cpp \
 
               
 all: $(NAME)

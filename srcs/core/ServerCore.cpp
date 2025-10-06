@@ -32,17 +32,20 @@ void ServerCore::init_sockets()
                 throw CoreError("listen()", errno, strerror(errno));
             }
             listen_sockets.insert(std::make_pair(config.pairs[i], socket_fd));
-            int client_socket;
-            int addr_len = sizeof(addr);
-            std::cout << "\n\n\n Waiting for clients \n\n\n";
-            if ((client_socket = accept(socket_fd, (struct sockaddr *)&addr, (socklen_t *)&addr_len)) < 0)
-            {
-                throw CoreError("accept()", errno, strerror(errno));
-            }
-            char buffer[30000] = {0};
-            read(client_socket, buffer, 30000);
-            printf("%s\n", buffer);
-            close(client_socket);
+            std::cout << "Listening on " << config.pairs[i].first
+                      << ":" << config.pairs[i].second
+                      << " (fd=" << socket_fd << ")" << std::endl;
+            // int client_socket;
+            // int addr_len = sizeof(addr);
+            // std::cout << "\n\n\n Waiting for clients \n\n\n";
+            // if ((client_socket = accept(socket_fd, (struct sockaddr *)&addr, (socklen_t *)&addr_len)) < 0)
+            // {
+            //     throw CoreError("accept()", errno, strerror(errno));
+            // }
+            // char buffer[30000] = {0};
+            // read(client_socket, buffer, 30000);
+            // printf("%s\n", buffer);
+            // close(client_socket);
         }
     }
 }

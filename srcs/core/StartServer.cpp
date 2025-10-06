@@ -1,5 +1,5 @@
 #include "../../includes/webserv.hpp"
-
+#include "../../includes/multiplexing_hpp/EventLoop.hpp"
 
 
 int startserver(const Config &config)
@@ -8,6 +8,8 @@ int startserver(const Config &config)
     try 
     {
         servercore.init_sockets();
+        EventLoop loop(servercore);
+        loop.run();
     }
     catch (CoreError &error)
     {
