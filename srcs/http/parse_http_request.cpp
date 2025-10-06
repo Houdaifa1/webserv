@@ -26,10 +26,14 @@ std::vector<std::string> split_by_two_spaces(const std::string& line)
 int countSpaces(const std::string& str)
 {
     int count = 0;
-    for (char c : str)
+    size_t i = 0;
+    char c;
+    while (i < str.size())
     {
+        c = str[i];
         if (c == ' ')
             count++;
+        i++;
     }
     return count;
 }
@@ -87,34 +91,37 @@ RequestResult parse_body(std::string &request, size_t &index, HttpRequest &req)
 {
     std::string key = "Content-Length";
 
+    std::map<std::string, std::string> headers = req.get_headers();
+    std::map<std::string, std::string>::iterator it = headers.find(key);
 
-    std::map<std::string, std::string>::iterator it = req.get_headers().find(key);
-
+    if (it == headers.end())
+    {
+        return SUCCESS;
+    }
     std::string length = it->second;
-    if (it == req.get_headers().end())
-        return RequestResult::SUCCESS;
-
     size_t body_length = (size_t)atoi(length.c_str());
     if (body_length == 0 && length != "0")
-        return RequestResult::ERROR;
+        return ERROR;
     if (request.size() - index < body_length)
-        return RequestResult::INCOMPLETE;
+        return INCOMPLETE;
 
     req.set_body(request.substr(index, body_length));
-    return RequestResult::SUCCESS;
+    return SUCCESS;
 }
 
 RequestResult parse_http_request(std::string request, HttpRequest &req)
 {
     size_t index = request.find("\r\n") ;
     if (index == std::string::npos)
-        return RequestResult::ERROR;
+        return ERROR;
     std::string request_line = request.substr(0, index);
     index += 2;
     if (!parse_request_line(request_line, req))
-        return (RequestResult::ERROR);
+        return (ERROR);
+         
     if (!parse_headers(request, index, req))
-        return RequestResult::ERROR;
+        return ERROR;
+    
     index += 2;
     return(parse_body(request, index, req));
 }
@@ -127,9 +134,10 @@ RequestResult parse_http_request(std::string request, HttpRequest &req)
 //     std::string request = "GET /index.html HTTP/1.1\r\n"
 //                       "Host: www.example.com\r\n"
 //                       "Connection: keep-alive\r\n"
-//                       "Content-Length: 0\r\n"
+//                       "Content-Length: 5\r\n"
 //                       "\r\n\r\n"
 //                       "Hello";
+//                    HttpRequest req;  
 //     RequestResult result = parse_http_request(request,req);
 //     std::cout << "Method : " << req.get_httpmethod() << std::endl;
 //     std::cout << "Path : " << req.get_requestpath() << std::endl;
