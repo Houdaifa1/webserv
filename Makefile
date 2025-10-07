@@ -10,7 +10,7 @@ CNF_SRC_DIR    = srcs/parsing/parse_config
 CORE_SRC_DIR   = srcs/core
 HELP_FUNCS_DIR = srcs/helper_funcs
 HTTP_SRC_DIR   = srcs/http
-MULTIPLEXING = srcs/multiplexing
+MULTIPLEXING   = srcs/multiplexing
 
 SRC         = $(SRC_DIR)/main.cpp           \
               $(PARS_DIR)/get_cnf.cpp        \
@@ -25,10 +25,12 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(CORE_SRC_DIR)/ServerCore.cpp \
               $(CORE_SRC_DIR)/StartServer.cpp \
               $(HTTP_SRC_DIR)/HttpRequest.cpp  \
-              $(HTTP_SRC_DIR)/parse_http_request.cpp  \
-              $(HELP_FUNCS_DIR)/into_string.cpp \
+              $(HTTP_SRC_DIR)/HttpHandler.cpp   \
+              $(HELP_FUNCS_DIR)/into_string.cpp  \
+              $(HTTP_SRC_DIR)/parse_http_request.cpp   \
               $(HELP_FUNCS_DIR)/remove_white_spaces.cpp \
               $(MULTIPLEXING)/EventLoop.cpp \
+               $(MULTIPLEXING)/Connection.cpp \
 
               
 all: $(NAME)
