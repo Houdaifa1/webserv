@@ -11,7 +11,7 @@ server {
     root /var/www/example;
 
     location / {
-        allowed_methods GET POST DELETE;
+        allowed_methods G POST DELETE;
         index index.html index.htm;
         autoindex off;
     }

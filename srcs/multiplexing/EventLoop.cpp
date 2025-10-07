@@ -47,6 +47,34 @@ void EventLoop::set_nonblocking(int fd)
     fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
+void EventLoop::create_connection(int client_fd)
+{
+    struct sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
+    if (getpeername(client_fd, (struct sockaddr *)&client_addr, &client_len) < 0)
+    {
+        close(client_fd);
+        return;
+    }
+    std::string client_ip = inet_ntoa(client_addr.sin_addr);
+    int client_port = ntohs(client_addr.sin_port);
+
+    struct sockaddr_in server_addr;
+    socklen_t server_len = sizeof(server_addr);
+    if (getsockname(client_fd, (struct sockaddr *)&server_addr, &server_len) < 0)
+    {
+        close(client_fd);
+        return;
+    }
+    std::string server_ip = inet_ntoa(server_addr.sin_addr);
+    int server_port = ntohs(server_addr.sin_port);
+
+    const Server &serv = server.findserver(server_ip, server_port);
+    Connection conn(client_fd, serv, client_ip, client_port, server_ip, server_port);
+    connections.insert(std::make_pair(client_fd, conn));
+
+}
+
 void EventLoop::accept_client(int listen_fd)
 {
     struct sockaddr_in addr;
@@ -56,6 +84,7 @@ void EventLoop::accept_client(int listen_fd)
         return;
 
     set_nonblocking(client_fd);
+    create_connection(client_fd);
 
     struct epoll_event ev;
     ev.events = EPOLLIN | EPOLLET;
@@ -78,17 +107,17 @@ void EventLoop::handle_client(int client_fd)
     buffer[bytes] = '\0';
     std::cout << "Received from client " << client_fd << ": " << buffer << std::endl;
     std::string request_str(buffer);
-
+    Connection &connection = connections[client_fd];
     HttpRequest req;
-    RequestResult result = parse_http_request(request_str, req);
-
+    RequestResult result = parse_http_request(request_str, connection.request);
     if (result == SUCCESS)
     {
         std::cout << "Parsed request from client " << client_fd << std::endl;
         std::cout << "Method: " << req.get_httpmethod() << std::endl;
         std::cout << "Path: " << req.get_requestpath() << std::endl;
         std::cout << "Version: " << req.get_httpversion() << std::endl;
-
+    
+        HttpHandler hadnlereq(connection);
         std::string response =
             "HTTP/1.1 200 OK\r\n"
             "Content-Length: 11\r\n"
@@ -96,8 +125,8 @@ void EventLoop::handle_client(int client_fd)
             "\r\n"
             "Hello nirou";
         send(client_fd, response.c_str(), response.size(), 0);
-        // todo: ip and port of each request client 
-        // object of request and serverCore 
+        // todo: ip and port of each request client
+        // object of request and serverCore
     }
     else if (result == INCOMPLETE)
     {
