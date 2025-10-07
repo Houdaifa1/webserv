@@ -1,21 +1,26 @@
 # include "../../includes/webserv.hpp"
 
 HttpHandler::HttpHandler(Connection &connection) : connection(connection)
-{}
-
-bool HttpHandler::handle_get()
 {
-    //to be done tomorrow oct 17
+     std::cout << connection.client_fd
+              << " | Client: " << connection.client_ip << ":" << connection.client_port
+              << " | Server: " << connection.server_ip << ":" << connection.server_port << std::endl;
+             
+}
+
+void HttpHandler::handle_get()
+{
+   
 
 }
 
-bool HttpHandler::handle_post()
+void HttpHandler::handle_post()
 {
 
 
 }
 
-bool HttpHandler::handle_delete()
+void HttpHandler::handle_delete()
 {
 
 

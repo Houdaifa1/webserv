@@ -13,9 +13,9 @@ class HttpHandler
 
         HttpHandler(Connection &connection);
 
-        bool handle_get();
-        bool handle_post();
-        bool handle_delete();
+        void handle_get();
+        void handle_post();
+        void handle_delete();
 };
 
 
