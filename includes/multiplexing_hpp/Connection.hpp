@@ -22,6 +22,7 @@ class Connection
         int             server_port;
         
         HttpRequest     request;
+        std::string     buffer;
         // HttpResponse response;
         ConnState       state;
 
