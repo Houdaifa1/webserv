@@ -98,19 +98,38 @@ void EventLoop::accept_client(int listen_fd)
 void EventLoop::handle_client(int client_fd)
 {
     char buffer[4096];
-    int bytes = recv(client_fd, buffer, sizeof(buffer), 0);
-    if (bytes <= 0)
-    {
-        close(client_fd);
-        std::cout << "Closed client FD: " << client_fd << std::endl;
-        return;
-    }
-    buffer[bytes] = '\0';
-    std::cout << "Received from client " << client_fd << ": " << buffer << std::endl;
-    std::string request_str(buffer);
+    int bytes;
     std::map<int, Connection>::iterator it = connections.find(client_fd);
+    if (it == connections.end())
+        return; 
     Connection &connection = it->second;
-    RequestResult result = parse_http_request(request_str, connection.request);
+    
+    while (true)
+    {
+        bytes = recv(client_fd, buffer, sizeof(buffer), 0);
+        if (bytes > 0)
+            connection.buffer.append(buffer, bytes);
+        else if (bytes == 0)
+        {
+            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+            close(client_fd);
+            connections.erase(it);
+            std::cout << "client closed connection: " << client_fd << std::endl;
+            return;
+        }
+        else
+        {
+            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+            close(client_fd);
+            connections.erase(it);
+            std::cout << "recv() failed on client " << client_fd << ", closing connection" << std::endl;
+            return; 
+        }
+        if (bytes < (int)sizeof(buffer))
+            break;
+
+    }
+    RequestResult result = parse_http_request(connection.buffer, connection.request);
    
     if (result == SUCCESS)
     {
@@ -127,15 +146,17 @@ void EventLoop::handle_client(int client_fd)
             "\r\n"
             "Hello nirou";
         send(client_fd, response.c_str(), response.size(), 0);
-        // todo: ip and port of each request client
-        // object of request and serverCore
-         close(client_fd);
+        
+        connection.buffer.clear();
+        close(client_fd);
+        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
+        connections.erase(it);
+        // todo after method: add timeouts , and keep-alive (3lahsab) 
     }
     else if (result == INCOMPLETE)
     {
         std::cout << "Incomplete request from client " << client_fd << std::endl;
-        // todo: i
-         close(client_fd);
+        return;
     }
     else 
     {
@@ -145,7 +166,10 @@ void EventLoop::handle_client(int client_fd)
             "Content-Length: 0\r\n"
             "\r\n";
         send(client_fd, response.c_str(), response.size(), 0);
+
+        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
         close(client_fd);
+        connections.erase(it);
     }
     
 }
