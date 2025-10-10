@@ -29,7 +29,7 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(HELP_FUNCS_DIR)/into_string.cpp  \
               $(HTTP_SRC_DIR)/parse_http_request.cpp   \
               $(HELP_FUNCS_DIR)/remove_white_spaces.cpp \
-              $(MULTIPLEXING)/EventLoop.cpp \
+              $(MULTIPLEXING)/EventLoop.cpp  \
                $(MULTIPLEXING)/Connection.cpp \
 
               

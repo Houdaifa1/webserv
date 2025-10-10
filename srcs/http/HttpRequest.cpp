@@ -24,3 +24,9 @@ void HttpRequest::set_headers(std::string key, std::string value)
 
 void HttpRequest::set_body(std::string Newbody)
     {body = Newbody;}
+
+void HttpRequest::set_query(std::string Newquery)
+    {query = Newquery;}
+
+void HttpRequest::set_correct_path(std::string Newcorrect_path)
+    {correct_path = Newcorrect_path;}

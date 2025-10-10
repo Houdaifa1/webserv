@@ -10,6 +10,8 @@ class HttpRequest
         std::string                         httpmethod;
         std::string                         requestpath;
         std::string                         httpversion;
+        std::string                         query;
+        std::string                         correct_path;
         std::map<std::string, std::string>  headers;
         std::string                         body;
     
@@ -28,6 +30,8 @@ class HttpRequest
         void set_httpversion(std::string Newhttpversion);
         void set_headers(std::string key, std::string value);
         void set_body(std::string Newbody);
+        void set_query(std::string Newquery);
+        void set_correct_path(std::string Newcorrect_path);
 
 };
 
