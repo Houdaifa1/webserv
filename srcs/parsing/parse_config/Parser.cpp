@@ -194,7 +194,7 @@ Server Parser::parse_server()
     throw Parsererror(UnexpectedEOFend, "", path, tokens[index - 1].line + 1);
 }
 
-void Parser::check_directive(Directive &directive, bool &contain_listen, Config &config)
+void Parser::check_directive(Directive &directive, bool &contain_listen, int &contain_root, Config &config, std::string &global_root)
 {
     if (directive.name == "listen")
     {
@@ -203,6 +203,13 @@ void Parser::check_directive(Directive &directive, bool &contain_listen, Config 
         config.pairs.push_back(pair);
         contain_listen = true;
     }
+    if (directive.name == "root")
+    {
+        parse_root(directive, path);
+        global_root = directive.args[0];
+        contain_root++;
+    }
+
 }
 
 void Parser::validate_config(Config &config)
@@ -214,12 +221,36 @@ void Parser::validate_config(Config &config)
     for (size_t i = 0; i < config.servers.size(); i++)
     {
         bool contain_listen = false;
+        int contain_root = 0;
         for (size_t j = 0; j < config.servers[i].directives.size(); j++)
         {
-            check_directive(config.servers[i].directives[j], contain_listen, config);
+            check_directive(config.servers[i].directives[j], contain_listen, contain_root, config, config.servers[i].global_root);
         }
         if (!contain_listen)
             throw Parsererror(MissingListen, "", path, 0);
+        if (contain_root == 0 || contain_root == 1 )
+        {
+            for (size_t j = 0; j < config.servers[i].locations.size(); j++)
+            {
+                int how_many_root = 0;
+                config.servers[i].locations[j].root = config.servers[i].global_root;
+                for (size_t y = 0; y < config.servers[i].locations[j].directives.size(); y++)
+                {
+                    if (config.servers[i].locations[j].directives[y].name == "root")
+                    {
+                        parse_root(config.servers[i].locations[j].directives[y], path);
+                        config.servers[i].locations[j].root = config.servers[i].locations[j].directives[y].args[0];
+                        how_many_root++;
+                    }
+                }
+                if (how_many_root > 1)
+                    throw Parsererror(DuplicateRoot , "location", path, 0);
+                if (how_many_root == 0 && contain_root != 1)
+                    throw Parsererror(MissingRoot, "", path, 0);
+            }
+        }
+        if (contain_root > 1)
+            throw Parsererror(DuplicateRoot , "server", path, 0);
     }
 }
 

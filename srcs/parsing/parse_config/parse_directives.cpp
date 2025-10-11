@@ -83,3 +83,11 @@ void parse_listen(Directive &directive, std::string &path)
         directive.args.push_back(port);
     }
 }
+
+
+
+void parse_root(Directive &directive, std::string &path)
+{
+    if (directive.args.size() != 1)
+        throw Parsererror(InvalidNumberArgs, directive.name, path, directive.position.line);
+}

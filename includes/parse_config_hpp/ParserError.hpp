@@ -22,6 +22,8 @@ enum ParserErrorType
     MissingAddress,
     InvalidAddress,
     MissingListen,
+    DuplicateRoot,
+    MissingRoot,
 };
 
 class Parsererror

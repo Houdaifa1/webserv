@@ -8,6 +8,7 @@ class Location
     public:
 
         std::string             path;
+        std::string             root;
         std::vector<Directive>  directives;
         TrackPos                position;
     

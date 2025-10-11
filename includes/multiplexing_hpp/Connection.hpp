@@ -21,6 +21,7 @@ class Connection
         std::string     server_ip;
         int             server_port;
         
+        Location        location;
         HttpRequest     request;
         std::string     buffer;
         // HttpResponse response;
@@ -29,6 +30,7 @@ class Connection
         Connection(int client_fd, const Server &server,
                const std::string &client_ip, int client_port,
                const std::string &server_ip, int server_port);
+               
 };
 
 

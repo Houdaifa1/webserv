@@ -8,6 +8,7 @@ class   Server
     public :
 
         std::vector<Directive>  directives;
+        std::string             global_root;
         std::vector<Location>   locations;
         TrackPos                position;
 

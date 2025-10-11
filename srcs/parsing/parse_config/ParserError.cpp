@@ -64,7 +64,12 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
         }
         case InvalidNumberArgs:
         {
-            mesg = "Error: directive " + value + " expects exactly 1 argument in #";
+            mesg = "Error: directive " + value + " expects exactly 1 argument in ";
+            break;
+        }
+        case DuplicateRoot:
+        {
+            mesg = "Error: block " + value + " duplicate root directive in ";
             break;
         }
         case InvalidArgument:
@@ -90,6 +95,11 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
         case MissingListen:
         {
             mesg = "Error: missing required \"listen\" directive for server in " + path  + "\n";
+            return ;
+        }
+        case MissingRoot:
+        {
+            mesg = "Error: missing required \"root\" directive for server in " + path  + "\n";
             return ;
         }
     }
