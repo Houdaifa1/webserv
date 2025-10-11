@@ -39,8 +39,6 @@ server {
     listen 127.0.0.1:1555  ;
     server_name secure.example.com;
 
-    root /etc/ssl/certs/example.crt;
-    root /etc/ssl/private/example.key;
 
     root /var/www/secure;
     client_max_body_size 10M;

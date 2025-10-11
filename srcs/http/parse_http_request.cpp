@@ -50,8 +50,8 @@ bool parse_request_line(std::string &request_line, HttpRequest &req)
         return false;
     if (words[0] != "GET" && words[0] != "POST" && words[0] != "DELETE")
         return false;
-    if (words[1][0] != '/')
-        return false;
+    // if (words[1][0] != '/')
+    //     return false;
     if (words[2] != "HTTP/1.1" && words[2] != "HTTP/1.0")
         return false;
     req.set_httpmethod(words[0]);
