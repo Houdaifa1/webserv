@@ -8,7 +8,7 @@ std::string HttpRequest::get_requestpath() const {return requestpath;}
 std::string HttpRequest::get_httpversion() const {return httpversion;}
 std::string HttpRequest::get_body() const {return body;}
 std::map<std::string, std::string> HttpRequest::get_headers() const {return headers;}
-
+std::string HttpRequest::get_correct_path() const {return correct_path;}
 
 void HttpRequest::set_httpmethod(std::string Newhttpmethod)
     {httpmethod = Newhttpmethod;}

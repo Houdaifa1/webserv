@@ -14,20 +14,20 @@ server {
         allowed_methods ;
         index index.html index.htm;
         autoindex on off;
-          root /var/www/example ;
+          root /var/www/test ;
     }
 
-    location /upload/ {
+    location /api/ {
         allowed_methods POST;
         autoindex on;
         upload_store /var/www/uploads;
-          root /var/www/example ;
+          root /var/www/./haha ;
     }
 
-    location / {
+    location /api/test/ {
        
         cgi_path /usr/bin/php-cgi;
-          root /var/www/example ;
+          root /var/www/hohoh ;
     }
 
     location /redirect-44me/ {
@@ -52,26 +52,18 @@ server {
     root /var/www/secure;
     client_max_body_size 10M;
 
-    
 
-
-  
-
-    location /images {
-        root /var/www/html/images;
+     
+   
+    location /api/ {
+        allowed_methods POST;
+        autoindex on;
+        upload_store /var/www/uploads;
+          root /var/www/example ;
     }
 
-    location /images/icons {
-        root /var/www/html/images/icons;
-    }
 
-    location /api {
-        root /var/www/html/api;
-    }
 
-    location /api/v1 {
-        root /var/www/html/api/v1;
-    }
 }
 
 

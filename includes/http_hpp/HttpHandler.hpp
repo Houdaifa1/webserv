@@ -18,6 +18,7 @@ class HttpHandler
         bool decode_path(std::string &path);
         void handle_post();
         void handle_delete();
+        void check_final_path();
 };
 
 

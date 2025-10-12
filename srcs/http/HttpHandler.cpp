@@ -7,6 +7,7 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
                << " | Server: " << connection.server_ip << ":" << connection.server_port << std::endl;
 
      correct_path();
+     check_final_path();
 }
 
 bool check_is_hex(char h)
@@ -164,33 +165,33 @@ bool find_location(const Server &server, const std::string &normalized_path, Loc
 {
      bool found = false;
      size_t best_match_len = 0;
-
-     for (size_t i = 0; i < server.locations.size(); i++)
-     {
+     std::string loc_path;
+     
+    for (size_t i = 0; i < server.locations.size(); i++)
+    {
           const Location &loc = server.locations[i];
-          const std::string &loc_path = loc.path;
-
-          if (normalized_path.compare(0, loc_path.size(), loc_path) != 0)
-               continue;
-          if (loc_path != "/" &&
-              normalized_path.size() > loc_path.size() &&
-              normalized_path[loc_path.size()] != '/')
-               continue;
-          if (loc_path.size() > best_match_len)
-          {
-               best_match_len = loc_path.size();
-               location = loc;
-               found = true;
-          }
-     }
-     return found;
+          loc_path = loc.path;
+          normalize_path(loc_path);
+        if (normalized_path.compare(0, loc_path.size(), loc_path) != 0)
+            continue;
+        if (loc_path != "/" &&
+            !(normalized_path.size() == loc_path.size() ||
+             (normalized_path.size() > loc_path.size() && normalized_path[loc_path.size()] == '/')))
+            continue;
+        if (loc_path.size() > best_match_len)
+        {
+            best_match_len = loc_path.size();
+            location = loc;
+            found = true;
+        }
+    }
+    return found;
 }
 
 void HttpHandler::correct_path()
 {
      std::string raw_path = connection.request.get_requestpath();
      std::string query;
-     // std::string final_path = connection.server.
 
      size_t index = raw_path.find("#");
      raw_path = raw_path.substr(0, index);
@@ -201,13 +202,21 @@ void HttpHandler::correct_path()
 
      raw_path = raw_path.substr(0, index);
      if (!decode_path(raw_path))
-          std::cout << "error in decoding\n"; // oct11 return error in decode
+          std::cout << "error in decoding\n";
      normalize_path(raw_path);
      std::cout << "Normalized path: " << raw_path << "\n";
      if (!find_location(connection.server, raw_path, connection.location))
           std::cout << "Error: no matching location found\n";
+     connection.request.set_correct_path(raw_path);
+}
 
-
+void HttpHandler::check_final_path()
+{
+     std::string root = connection.location.root;
+     normalize_path(root);
+     std::string request_path = connection.request.get_correct_path();
+     std::string final_path = root  + request_path;
+     connection.request_full_path = final_path;
 }
 
 void HttpHandler::handle_get()

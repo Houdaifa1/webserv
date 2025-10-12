@@ -22,6 +22,7 @@ class Connection
         int             server_port;
         
         Location        location;
+        std::string     request_full_path;
         HttpRequest     request;
         std::string     buffer;
         // HttpResponse response;
