@@ -11,6 +11,7 @@ CORE_SRC_DIR   = srcs/core
 HELP_FUNCS_DIR = srcs/helper_funcs
 HTTP_SRC_DIR   = srcs/http
 MULTIPLEXING   = srcs/multiplexing
+UTILS_SRC      = srcs/utils
 
 SRC         = $(SRC_DIR)/main.cpp           \
               $(PARS_DIR)/get_cnf.cpp        \
@@ -30,7 +31,9 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(HTTP_SRC_DIR)/parse_http_request.cpp   \
               $(HELP_FUNCS_DIR)/remove_white_spaces.cpp \
               $(MULTIPLEXING)/EventLoop.cpp  \
-               $(MULTIPLEXING)/Connection.cpp \
+              $(MULTIPLEXING)/Connection.cpp  \
+              $(UTILS_SRC)/ConfigUtils.cpp     \
+              $(UTILS_SRC)/FileUtils.cpp        \
 
               
 all: $(NAME)

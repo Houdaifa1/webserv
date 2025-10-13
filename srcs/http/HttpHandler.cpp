@@ -225,6 +225,25 @@ void HttpHandler::handle_get()
 
 void HttpHandler::handle_post()
 {
+     std::string correct_path = connection.request.get_correct_path();
+     if (!is_method_allowed(connection.location, "POST"))
+     {
+          std::string resp =
+            "HTTP/1.1 405 Method Not Allowed\r\n"
+            "Allow: POST\r\n"
+            "Content-Length: 0\r\n"
+            "\r\n";
+          send(connection.client_fd, resp.c_str(), resp.size(), 0);
+          return;
+     }
+     std::string    server_root = resolve_upload_path(connection.location);
+     std::string    location_path = connection.location.path;
+     std::string    relative_path = correct_path;
+
+     if (relative_path.find(location_path) == 0)
+          relative_path.erase(0, location_path.length());
+     std::string fullpath = make_fullpath(server_root, relative_path);
+
 }
 
 void HttpHandler::handle_delete()
