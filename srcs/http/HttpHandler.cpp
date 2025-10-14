@@ -210,13 +210,7 @@ void HttpHandler::correct_path()
 
      std::string loc_path = connection.location.path;
      normalize_path(loc_path);
-     if (loc_path[0] == '/')
-          connection.request.set_correct_path(raw_path.substr(loc_path.size()));
-     else if (raw_path == "/")
-          connection.request.set_correct_path("");
-     else
-          connection.request.set_correct_path(raw_path.substr(loc_path.size() + 1));
-     
+     connection.request.set_correct_path(raw_path.substr(loc_path.size()));
 }
 
 void HttpHandler::check_final_path()
