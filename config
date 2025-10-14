@@ -100,6 +100,11 @@ server {
         autoindex off;
         index download.html;
     }
+ location /api/v1 {
+        root /var/www/html/api/v1;
+        autoindex off;
+        index api-index.html;
+    }
 
     location /api/v1 {
         root /var/www/html/api/v1;
