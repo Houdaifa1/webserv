@@ -207,7 +207,16 @@ void HttpHandler::correct_path()
      std::cout << "Normalized path: " << raw_path << "\n";
      if (!find_location(connection.server, raw_path, connection.location))
           std::cout << "Error: no matching location found\n";
-     connection.request.set_correct_path(raw_path);
+
+     std::string loc_path = connection.location.path;
+     normalize_path(loc_path);
+     if (loc_path == "/")
+          connection.request.set_correct_path(raw_path.substr(loc_path.size()));
+     else if (raw_path == "/")
+          connection.request.set_correct_path("");
+     else
+          connection.request.set_correct_path(raw_path.substr(loc_path.size() + 1));
+     
 }
 
 void HttpHandler::check_final_path()
@@ -217,6 +226,7 @@ void HttpHandler::check_final_path()
      std::string request_path = connection.request.get_correct_path();
      std::string final_path = root  + request_path;
      connection.request_full_path = final_path;
+     std::cout << "/n/ncorrect path : " << final_path << "\n\n";
 }
 
 void HttpHandler::handle_get()
