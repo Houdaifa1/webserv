@@ -309,6 +309,10 @@ void HttpHandler::handle_get()
           HttpResponse response(connection, status_code, type, file_size, connection.request_full_path);
           response.sendresponse();
      }
+     if (check == Directory)
+     {
+          // to be done oct 15
+     }
      
 }
 
