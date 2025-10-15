@@ -9,6 +9,7 @@ class Location
 
         std::string             path;
         std::string             root;
+        std::string             autoindex;
         std::vector<Directive>  directives;
         TrackPos                position;
     

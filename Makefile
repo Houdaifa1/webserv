@@ -27,7 +27,8 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(CORE_SRC_DIR)/StartServer.cpp \
               $(HTTP_SRC_DIR)/HttpRequest.cpp  \
               $(HTTP_SRC_DIR)/HttpHandler.cpp   \
-              $(HELP_FUNCS_DIR)/into_string.cpp  \
+              $(HTTP_SRC_DIR)/HttpResponse.cpp   \
+              $(HELP_FUNCS_DIR)/into_string.cpp   \
               $(HTTP_SRC_DIR)/parse_http_request.cpp   \
               $(HELP_FUNCS_DIR)/remove_white_spaces.cpp \
               $(MULTIPLEXING)/EventLoop.cpp  \

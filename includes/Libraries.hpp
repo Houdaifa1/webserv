@@ -14,5 +14,8 @@
 # include <arpa/inet.h>
 # include <cstdlib>
 # include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <ctime> 
 
 # endif 

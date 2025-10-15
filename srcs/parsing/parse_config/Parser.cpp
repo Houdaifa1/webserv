@@ -210,6 +210,7 @@ void Parser::check_directive(Directive &directive, bool &contain_listen, int &co
         contain_root++;
     }
 
+
 }
 
 void Parser::validate_config(Config &config)
@@ -233,16 +234,29 @@ void Parser::validate_config(Config &config)
             for (size_t j = 0; j < config.servers[i].locations.size(); j++)
             {
                 int how_many_root = 0;
+                int contain_autoindex = 0;
                 config.servers[i].locations[j].root = config.servers[i].global_root;
+                config.servers[i].locations[j].autoindex = "none";
                 for (size_t y = 0; y < config.servers[i].locations[j].directives.size(); y++)
                 {
+                    
                     if (config.servers[i].locations[j].directives[y].name == "root")
                     {
                         parse_root(config.servers[i].locations[j].directives[y], path);
                         config.servers[i].locations[j].root = config.servers[i].locations[j].directives[y].args[0];
                         how_many_root++;
                     }
+                    if (config.servers[i].locations[j].directives[y].name == "autoindex")
+                    {
+                        contain_autoindex++;
+                        std::string option = config.servers[i].locations[j].directives[y].args[0];
+                        parse_autoindex(config.servers[i].locations[j].directives[y], path);
+                        config.servers[i].locations[j].autoindex = option;
+                    }
+
                 }
+                if (contain_autoindex > 1)
+                    throw Parsererror(DuplicateAutoindex , "location", path, 0);
                 if (how_many_root > 1)
                     throw Parsererror(DuplicateRoot , "location", path, 0);
                 if (how_many_root == 0 && contain_root != 1)

@@ -13,7 +13,7 @@ server {
     location / {
         allowed_methods POST;
         index index.html index.htm;
-        autoindex on off;
+        autoindex on ;
           root /var/www/haha;
     }
 
@@ -98,6 +98,7 @@ server {
     location /downloads {
         root /var/www/html/downloads;
         autoindex off;
+
         index download.html;
     }
  location /api/v1 {
@@ -108,6 +109,16 @@ server {
 
     location /api/v1 {
         root /var/www/html/api/v1;
+        autoindex off;
+        index api-index.html;
+    }
+    location /webserv {
+        root /home/hdrahm/Desktop/webserv/////;
+        autoindex off;
+        index api-index.html;
+    }
+        location /notregfile {
+        root /dev;
         autoindex off;
         index api-index.html;
     }

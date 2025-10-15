@@ -67,9 +67,19 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
             mesg = "Error: directive " + value + " expects exactly 1 argument in ";
             break;
         }
+        case OnOffexpected:
+        {
+            mesg = "Error: directive " + value + " expects on or off as argument  in ";
+            break;
+        }
         case DuplicateRoot:
         {
             mesg = "Error: block " + value + " duplicate root directive in ";
+            break;
+        }
+        case DuplicateAutoindex:
+        {
+            mesg = "Error: block " + value + " duplicate Autoindex directive in ";
             break;
         }
         case InvalidArgument:

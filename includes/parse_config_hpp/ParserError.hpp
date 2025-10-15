@@ -24,6 +24,8 @@ enum ParserErrorType
     MissingListen,
     DuplicateRoot,
     MissingRoot,
+    OnOffexpected,
+    DuplicateAutoindex,
 };
 
 class Parsererror

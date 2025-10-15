@@ -91,3 +91,11 @@ void parse_root(Directive &directive, std::string &path)
     if (directive.args.size() != 1)
         throw Parsererror(InvalidNumberArgs, directive.name, path, directive.position.line);
 }
+
+void parse_autoindex(Directive &directive, std::string &path)
+{
+    if (directive.args.size() != 1)
+        throw Parsererror(InvalidNumberArgs, directive.name, path, directive.position.line);
+    if (directive.args[0] != "on" && directive.args[0] != "off")
+        throw Parsererror(OnOffexpected, directive.name, path, directive.position.line);
+}

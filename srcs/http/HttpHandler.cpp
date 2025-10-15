@@ -8,6 +8,7 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
 
      correct_path();
      check_final_path();
+     handle_get();
 }
 
 bool check_is_hex(char h)
@@ -224,8 +225,91 @@ void HttpHandler::check_final_path()
      std::cout << "\n\ncorrect path : " << final_path << "\n\n";
 }
 
+PathCheck HttpHandler::check_path_exist()
+{
+     struct stat check;
+
+     if (stat(connection.request_full_path.c_str(), &check) == 0)
+     {
+          if (S_ISDIR(check.st_mode))
+          {
+               
+               if (opendir(connection.request_full_path.c_str()) == NULL)
+                    return Error;
+               else 
+                    return Directory;
+
+          }
+          else if (S_ISREG(check.st_mode))
+          {
+               if (access(connection.request_full_path.c_str(), R_OK) == 0)
+               {
+                    file_size = check.st_size;
+                    return File;
+               }
+               else
+                    return Error;
+          }
+          else 
+               return Error;
+     }
+     else
+          return NotFound;
+
+}
+
+
+std::string HttpHandler::get_type(const std::string &ext)
+{
+    std::map<std::string, std::string> mime_types;
+    mime_types["html"] = "text/html";
+    mime_types["htm"]  = "text/html";
+    mime_types["css"]  = "text/css";
+    mime_types["js"]   = "application/javascript";
+    mime_types["json"] = "application/json";
+    mime_types["png"]  = "image/png";
+    mime_types["jpg"]  = "image/jpeg";
+    mime_types["jpeg"] = "image/jpeg";
+    mime_types["gif"]  = "image/gif";
+    mime_types["svg"]  = "image/svg+xml";
+    mime_types["ico"]  = "image/x-icon";
+    mime_types["txt"]  = "text/plain";
+    mime_types["xml"]  = "application/xml";
+    mime_types["pdf"]  = "application/pdf";
+    mime_types["zip"]  = "application/zip";
+    mime_types["tar"]  = "application/x-tar";
+    mime_types["gz"]   = "application/gzip";
+    mime_types["mp3"]  = "audio/mpeg";
+    mime_types["mp4"]  = "video/mp4";
+    mime_types["webm"] = "video/webm";
+
+    std::map<std::string, std::string>::iterator it = mime_types.find(ext);
+    if (it != mime_types.end())
+        return it->second;
+    return "application/octet-stream";
+}
+
 void HttpHandler::handle_get()
 {
+     int status_code;
+     PathCheck check = check_path_exist();
+     
+     if (check == Error)
+          std::cout << "403 forbiden \n\n\n";
+     if (check == File)
+     {
+          std::string ext;
+          std::string type;
+
+          status_code = 200;
+          size_t dot = connection.request_full_path.find_last_of('.');
+          if (dot == std::string::npos || dot == connection.request_full_path.length() - 1)
+               ext = "";
+          ext = connection.request_full_path.substr(dot + 1);
+          HttpResponse response(connection, status_code, type, file_size, connection.request_full_path);
+          response.sendresponse();
+     }
+     
 }
 
 void HttpHandler::handle_post()
