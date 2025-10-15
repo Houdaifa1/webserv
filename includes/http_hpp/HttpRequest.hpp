@@ -33,6 +33,7 @@ class HttpRequest
         void set_body(std::string Newbody);
         void set_query(std::string Newquery);
         void set_correct_path(std::string Newcorrect_path);
+        bool is_chunked() const;
 
 };
 

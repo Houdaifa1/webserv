@@ -30,3 +30,17 @@ void HttpRequest::set_query(std::string Newquery)
 
 void HttpRequest::set_correct_path(std::string Newcorrect_path)
     {correct_path = Newcorrect_path;}
+
+bool HttpRequest::is_chunked() const
+{
+    std::map<std::string, std::string>::const_iterator it = headers.find("Transfer-Encoding");
+    if (it != headers.end())
+    {
+        std::string value = it->second;
+        for (size_t i = 0; i < value.size(); ++i)
+            value[i] = std::tolower(value[i]);
+        if (value.find("chunked") != std::string::npos)
+            return true;
+    }
+    return false;
+}

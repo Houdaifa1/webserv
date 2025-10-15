@@ -9,7 +9,8 @@
 # include "http_hpp/HttpHandler.hpp"
 # include "http_hpp/HttpResponse.hpp"
 # include "utils_hpp/ConfigUtils.hpp"
-
+# include "utils_hpp/FileUtils.hpp"
+# include "utils_hpp/ResponseUtils.hpp"
 
 enum RequestResult
 {

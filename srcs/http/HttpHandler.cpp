@@ -316,27 +316,61 @@ void HttpHandler::handle_get()
      
 }
 
+
 void HttpHandler::handle_post()
 {
      std::string correct_path = connection.request.get_correct_path();
      if (!is_method_allowed(connection.location, "POST"))
      {
-          std::string resp =
-            "HTTP/1.1 405 Method Not Allowed\r\n"
-            "Allow: POST\r\n"
-            "Content-Length: 0\r\n"
-            "\r\n";
-          send(connection.client_fd, resp.c_str(), resp.size(), 0);
+          send_simple_response(connection.client_fd, "405 Method Not Allowed");
+          return;
+     }
+     if (connection.request.is_chunked())
+     {
+          send_simple_response(connection.client_fd, "501 Not Implemented");
           return;
      }
      std::string    server_root = resolve_upload_path(connection.location);
      std::string    location_path = connection.location.path;
      std::string    relative_path = correct_path;
-
      if (relative_path.find(location_path) == 0)
           relative_path.erase(0, location_path.length());
-     std::string fullpath = make_fullpath(server_root, relative_path);
+     std::string    fullpath = make_fullpath(server_root, relative_path);
+     std::string    parent_dir = get_parent_dir(fullpath);
 
+     bool is_dir_request = false;
+     if (!correct_path.empty() && correct_path[correct_path.size() - 1] == '/')
+          is_dir_request = true;
+     else if (correct_path == location_path.substr(0, location_path.size() - 1))
+          is_dir_request = true;
+     if (relative_path.empty() || is_dir_request || !dir_exists(parent_dir))
+     {
+          send_simple_response(connection.client_fd, "404 Not Found");
+          return ;
+     }
+     if (!is_writable_dir(parent_dir))
+     {
+          send_simple_response(connection.client_fd, "403 Forbidden");
+          return ;
+     }
+
+     std::ofstream ofs(fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
+     if (!ofs.is_open() || !ofs.good())
+     {
+          send_simple_response(connection.client_fd, "500 Internal Server Error");
+          return ;
+     }
+     const std::string &body = connection.request.get_body();
+     ofs.write(body.c_str(), body.size());
+     if (!ofs.good())
+     {
+          ofs.close();
+          send_simple_response(connection.client_fd, "500 Internal Server Error");
+          return ;
+     }
+     ofs.close();
+     send_created_response(connection.client_fd, correct_path);
+     // todo tomorrow : check the content lenght , and Check  client_max_body_size
 }
 
 void HttpHandler::handle_delete()

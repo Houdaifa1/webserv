@@ -141,7 +141,6 @@ void EventLoop::handle_client(int client_fd)
             handlereq.handle_post();
         else if (method == "DELETE")
             handlereq.handle_delete();
-        
         std::cout << "Parsed request from client " << client_fd << std::endl;
         std::cout << "Method: " << connection.request.get_httpmethod() << std::endl;
         std::cout << "Path: " << connection.request.get_requestpath() << std::endl;

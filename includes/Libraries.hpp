@@ -16,6 +16,10 @@
 # include <unistd.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <ctime> 
+#include <ctime>
+#include <unistd.h>
+#include <fstream>
+#include <sstream>
+
 
 # endif 

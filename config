@@ -20,7 +20,7 @@ server {
     location /api/ {
         allowed_methods POST;
         autoindex on;
-        root /var/www/html ;
+        root /home/nirou/va/ww/html ;
         
     }
 
