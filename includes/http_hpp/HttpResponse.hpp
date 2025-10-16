@@ -13,6 +13,7 @@ class HttpResponse
         std::string content_type;
         size_t      content_length;
         std::string body_file_path;
+        std::string body_string;
         
         std::map<std::string, std::string>  extra_headers;
 
@@ -20,6 +21,7 @@ class HttpResponse
     public:
 
         HttpResponse(Connection &connection, int status, const std::string type, size_t length, const std::string file);
+        HttpResponse(int status, Connection &connection, const std::string &type, size_t length, const std::string &body);
         std::string build_headers();
         void sendresponse();
 };

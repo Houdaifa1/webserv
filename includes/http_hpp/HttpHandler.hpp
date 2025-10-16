@@ -30,8 +30,10 @@ class HttpHandler
         void handle_post();
         void handle_delete();
         void check_final_path();
-        PathCheck check_path_exist();
+        PathCheck check_path_exist(std::string path);
         std::string get_type(const std::string &ext);
+        std::string get_index_file();
+        std::string get_html_entries(std::vector<std::string> &entries);
 };
 
 

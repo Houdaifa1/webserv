@@ -110,12 +110,11 @@ server {
     location /api/v1 {
         root /var/www/html/api/v1;
         autoindex off;
-        index api-index.html;
     }
     location /webserv {
         root /home/hdrahm/Desktop/webserv/////;
-        autoindex off;
-        index api-index.html;
+        autoindex on;
+       
     }
         location /notregfile {
         root /dev;

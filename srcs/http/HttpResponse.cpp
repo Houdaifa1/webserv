@@ -8,7 +8,12 @@ HttpResponse::HttpResponse(Connection &connection, int status, const std::string
         content_length(length),
         body_file_path(file) {}
 
-
+HttpResponse::HttpResponse(int status, Connection &connection, const std::string &type, size_t length, const std::string &body)
+    : connection(connection),
+      status_code(status),
+      content_type(type),
+      content_length(length),
+      body_string(body) {}
 
 std::string HttpResponse::build_headers()
 {
@@ -28,6 +33,11 @@ void HttpResponse::sendresponse()
     send(connection.client_fd, response.c_str(), response.size(), 0);
 
 
+    if (!body_string.empty())
+    {
+        send(connection.client_fd, body_string.c_str(), body_string.size(), 0);
+        return;
+    }
     FILE *file = fopen(body_file_path.c_str(), "rb");
     if (!file) {
         return;

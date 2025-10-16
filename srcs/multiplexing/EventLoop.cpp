@@ -135,9 +135,9 @@ void EventLoop::handle_client(int client_fd)
     {
         HttpHandler handlereq(connection);
         std::string method = connection.request.get_httpmethod();
-        if (method == "GET")
-            handlereq.handle_get();
-        else if (method == "POST")
+        // if (method == "GET")
+        //     handlereq.handle_get();
+        if (method == "POST")
             handlereq.handle_post();
         else if (method == "DELETE")
             handlereq.handle_delete();

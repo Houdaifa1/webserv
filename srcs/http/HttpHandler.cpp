@@ -167,26 +167,26 @@ bool find_location(const Server &server, const std::string &normalized_path, Loc
      bool found = false;
      size_t best_match_len = 0;
      std::string loc_path;
-     
-    for (size_t i = 0; i < server.locations.size(); i++)
-    {
+
+     for (size_t i = 0; i < server.locations.size(); i++)
+     {
           const Location &loc = server.locations[i];
           loc_path = loc.path;
           normalize_path(loc_path);
-        if (normalized_path.compare(0, loc_path.size(), loc_path) != 0)
-            continue;
-        if (loc_path != "/" &&
-            !(normalized_path.size() == loc_path.size() ||
-             (normalized_path.size() > loc_path.size() && normalized_path[loc_path.size()] == '/')))
-            continue;
-        if (loc_path.size() > best_match_len)
-        {
-            best_match_len = loc_path.size();
-            location = loc;
-            found = true;
-        }
-    }
-    return found;
+          if (normalized_path.compare(0, loc_path.size(), loc_path) != 0)
+               continue;
+          if (loc_path != "/" &&
+              !(normalized_path.size() == loc_path.size() ||
+                (normalized_path.size() > loc_path.size() && normalized_path[loc_path.size()] == '/')))
+               continue;
+          if (loc_path.size() > best_match_len)
+          {
+               best_match_len = loc_path.size();
+               location = loc;
+               found = true;
+          }
+     }
+     return found;
 }
 
 void HttpHandler::correct_path()
@@ -219,30 +219,33 @@ void HttpHandler::check_final_path()
      std::string root = connection.location.root;
      normalize_path(root);
      std::string request_path = connection.request.get_correct_path();
-     std::string final_path = root  + "/" + request_path;
+     std::string final_path = root + "/" + request_path;
      normalize_path(final_path);
      connection.request_full_path = final_path;
      std::cout << "\n\ncorrect path : " << final_path << "\n\n";
 }
 
-PathCheck HttpHandler::check_path_exist()
+PathCheck HttpHandler::check_path_exist(std::string path)
 {
      struct stat check;
 
-     if (stat(connection.request_full_path.c_str(), &check) == 0)
+     DIR *dir;
+     if (stat(path.c_str(), &check) == 0)
      {
           if (S_ISDIR(check.st_mode))
           {
-               
-               if (opendir(connection.request_full_path.c_str()) == NULL)
+               dir = opendir(path.c_str());
+               if (dir == NULL)
                     return Error;
-               else 
+               else
+               {
+                    closedir(dir);
                     return Directory;
-
+               }
           }
           else if (S_ISREG(check.st_mode))
           {
-               if (access(connection.request_full_path.c_str(), R_OK) == 0)
+               if (access(path.c_str(), R_OK) == 0)
                {
                     file_size = check.st_size;
                     return File;
@@ -250,52 +253,124 @@ PathCheck HttpHandler::check_path_exist()
                else
                     return Error;
           }
-          else 
+          else
                return Error;
      }
      else
           return NotFound;
-
 }
-
 
 std::string HttpHandler::get_type(const std::string &ext)
 {
-    std::map<std::string, std::string> mime_types;
-    mime_types["html"] = "text/html";
-    mime_types["htm"]  = "text/html";
-    mime_types["css"]  = "text/css";
-    mime_types["js"]   = "application/javascript";
-    mime_types["json"] = "application/json";
-    mime_types["png"]  = "image/png";
-    mime_types["jpg"]  = "image/jpeg";
-    mime_types["jpeg"] = "image/jpeg";
-    mime_types["gif"]  = "image/gif";
-    mime_types["svg"]  = "image/svg+xml";
-    mime_types["ico"]  = "image/x-icon";
-    mime_types["txt"]  = "text/plain";
-    mime_types["xml"]  = "application/xml";
-    mime_types["pdf"]  = "application/pdf";
-    mime_types["zip"]  = "application/zip";
-    mime_types["tar"]  = "application/x-tar";
-    mime_types["gz"]   = "application/gzip";
-    mime_types["mp3"]  = "audio/mpeg";
-    mime_types["mp4"]  = "video/mp4";
-    mime_types["webm"] = "video/webm";
+     std::map<std::string, std::string> mime_types;
+     mime_types["html"] = "text/html";
+     mime_types["htm"] = "text/html";
+     mime_types["css"] = "text/css";
+     mime_types["js"] = "application/javascript";
+     mime_types["json"] = "application/json";
+     mime_types["png"] = "image/png";
+     mime_types["jpg"] = "image/jpeg";
+     mime_types["jpeg"] = "image/jpeg";
+     mime_types["gif"] = "image/gif";
+     mime_types["svg"] = "image/svg+xml";
+     mime_types["ico"] = "image/x-icon";
+     mime_types["txt"] = "text/plain";
+     mime_types["xml"] = "application/xml";
+     mime_types["pdf"] = "application/pdf";
+     mime_types["zip"] = "application/zip";
+     mime_types["tar"] = "application/x-tar";
+     mime_types["gz"] = "application/gzip";
+     mime_types["mp3"] = "audio/mpeg";
+     mime_types["mp4"] = "video/mp4";
+     mime_types["webm"] = "video/webm";
 
-    std::map<std::string, std::string>::iterator it = mime_types.find(ext);
-    if (it != mime_types.end())
-        return it->second;
-    return "application/octet-stream";
+     std::map<std::string, std::string>::iterator it = mime_types.find(ext);
+     if (it != mime_types.end())
+          return it->second;
+     return "application/octet-stream";
+}
+
+std::string HttpHandler::get_index_file()
+{
+     std::string index_full_path;
+     for (size_t i = 0; i < connection.location.directives.size(); i++)
+     {
+          if (connection.location.directives[i].name == "index")
+          {
+               for (size_t j = 0; j < connection.location.directives[i].args.size(); j++)
+               {
+                    index_full_path = connection.request_full_path +
+                                      "/" + connection.location.directives[i].args[j];
+                    if (check_path_exist(index_full_path) == File)
+                    {
+                         return index_full_path;
+                    }
+               }
+          }
+     }
+     return "not found";
+}
+
+std::string HttpHandler::get_html_entries(std::vector<std::string> &entries)
+{
+     std::string html = "<html><head><title>Index of " + connection.request_full_path + "</title></head><body>";
+     html += "<h1>Index of " + connection.request_full_path + "</h1><ul>";
+
+     for (size_t i = 0; i < entries.size(); ++i)
+     {
+          std::string entry = entries[i];
+          html += "<li><a href=\"" + entry + "\">" + entry + "</a></li>";
+     }
+     html += "</ul></body></html>";
+     return (html);
 }
 
 void HttpHandler::handle_get()
 {
      int status_code;
-     PathCheck check = check_path_exist();
-     
+     PathCheck check = check_path_exist(connection.request_full_path);
+
      if (check == Error)
-          std::cout << "403 forbiden \n\n\n";
+     {
+          send_simple_response(connection.client_fd, "403 Forbidden");
+          return;
+     }
+     if (check == Directory)
+     {
+          std::string index_path = get_index_file();
+
+          if (index_path != "not found")
+          {
+               struct stat file;
+               connection.request_full_path = index_path;
+               stat(index_path.c_str(), &file);
+               file_size = file.st_size;
+               check = File;
+          }
+          else
+          {
+               DIR *dir = opendir(connection.request_full_path.c_str());
+               struct dirent *entry;
+               std::vector<std::string> entries;
+               if (connection.location.autoindex == "none" || connection.location.autoindex == "off")
+                    send_simple_response(connection.client_fd, "403 Forbidden");
+               else
+               {
+                    status_code = 200;
+                    std::string type = "text/html";
+                    while ((entry = readdir(dir)) != NULL)
+                    {
+                         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                              continue;
+                         entries.push_back(entry->d_name);
+                    }
+                    closedir(dir);
+                    std::string html = get_html_entries(entries);
+                    HttpResponse response(status_code, connection, type, html.size(), html);
+                    response.sendresponse();
+               }
+          }
+     }
      if (check == File)
      {
           std::string ext;
@@ -306,16 +381,11 @@ void HttpHandler::handle_get()
           if (dot == std::string::npos || dot == connection.request_full_path.length() - 1)
                ext = "";
           ext = connection.request_full_path.substr(dot + 1);
+          type = get_type(ext);
           HttpResponse response(connection, status_code, type, file_size, connection.request_full_path);
           response.sendresponse();
      }
-     if (check == Directory)
-     {
-          // to be done oct 15
-     }
-     
 }
-
 
 void HttpHandler::handle_post()
 {
@@ -330,13 +400,13 @@ void HttpHandler::handle_post()
           send_simple_response(connection.client_fd, "501 Not Implemented");
           return;
      }
-     std::string    server_root = resolve_upload_path(connection.location);
-     std::string    location_path = connection.location.path;
-     std::string    relative_path = correct_path;
+     std::string server_root = resolve_upload_path(connection.location);
+     std::string location_path = connection.location.path;
+     std::string relative_path = correct_path;
      if (relative_path.find(location_path) == 0)
           relative_path.erase(0, location_path.length());
-     std::string    fullpath = make_fullpath(server_root, relative_path);
-     std::string    parent_dir = get_parent_dir(fullpath);
+     std::string fullpath = make_fullpath(server_root, relative_path);
+     std::string parent_dir = get_parent_dir(fullpath);
 
      bool is_dir_request = false;
      if (!correct_path.empty() && correct_path[correct_path.size() - 1] == '/')
@@ -346,19 +416,19 @@ void HttpHandler::handle_post()
      if (relative_path.empty() || is_dir_request || !dir_exists(parent_dir))
      {
           send_simple_response(connection.client_fd, "404 Not Found");
-          return ;
+          return;
      }
      if (!is_writable_dir(parent_dir))
      {
           send_simple_response(connection.client_fd, "403 Forbidden");
-          return ;
+          return;
      }
 
      std::ofstream ofs(fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
      if (!ofs.is_open() || !ofs.good())
      {
           send_simple_response(connection.client_fd, "500 Internal Server Error");
-          return ;
+          return;
      }
      const std::string &body = connection.request.get_body();
      ofs.write(body.c_str(), body.size());
@@ -366,7 +436,7 @@ void HttpHandler::handle_post()
      {
           ofs.close();
           send_simple_response(connection.client_fd, "500 Internal Server Error");
-          return ;
+          return;
      }
      ofs.close();
      send_created_response(connection.client_fd, correct_path);
