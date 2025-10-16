@@ -198,7 +198,8 @@ void HttpHandler::correct_path()
      raw_path = raw_path.substr(0, index);
 
      index = raw_path.find("?");
-     query = raw_path.substr(index + 1);
+     if (index != std::string::npos)
+          query = raw_path.substr(index + 1);
      connection.request.set_query(query);
 
      raw_path = raw_path.substr(0, index);

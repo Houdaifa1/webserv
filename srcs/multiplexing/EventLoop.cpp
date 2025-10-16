@@ -135,18 +135,18 @@ void EventLoop::handle_client(int client_fd)
     {
         HttpHandler handlereq(connection);
         std::string method = connection.request.get_httpmethod();
-        // std::cout << "\n****************************************\n";
-        // std::cout << "Method: " << connection.request.get_httpmethod() << "\n";
-        // std::cout << "Version: " << connection.request.get_httpversion() << "\n";
-        // std::cout << "Body: " << connection.request.get_body() << "\n";
-        // std::cout << "Query: " << connection.request.get_query() << "\n";
-        // std::cout << "Request Path: " << connection.request.get_requestpath() << "\n";
-        // std::cout << "Correct Path: " << connection.request.get_correct_path() << "\n";
-        // std::cout << "######### Headers ###########" << std::endl;
-        // for (const auto &pair : connection.request.get_headers()) {
-        //     std::cout << pair.first << " = " << pair.second << std::endl;
-        // }
-        // std::cout << "########### END ############" << std::endl;
+        std::cout << "\n****************************************\n";
+        std::cout << "Method: " << connection.request.get_httpmethod() << "\n";
+        std::cout << "Version: " << connection.request.get_httpversion() << "\n";
+        std::cout << "Body: " << connection.request.get_body() << "\n";
+        std::cout << "Query: " << connection.request.get_query() << "\n";
+        std::cout << "Request Path: " << connection.request.get_requestpath() << "\n";
+        std::cout << "Correct Path: " << connection.request.get_correct_path() << "\n";
+        std::cout << "######### Headers ###########" << std::endl;
+        for (const auto &pair : connection.request.get_headers()) {
+            std::cout << pair.first << " = " << pair.second << std::endl;
+        }
+        std::cout << "########### END ############" << std::endl;
 
         // if (method == "GET")
         //     handlereq.handle_get();

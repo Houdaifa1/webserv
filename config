@@ -57,7 +57,7 @@ server {
      
    
     location /api/ {
-        allowed_methods POST;
+        allowed_methods ;
         autoindex on;
         upload_store /var/www/uploads;
           root /var/www/example ;
@@ -112,8 +112,8 @@ server {
         autoindex off;
     }
     location /webserv {
-        root /home/hdrahm/Desktop/webserv/////;
-        autoindex on;
+        root /home/doffy/Desktop/work/webserv/;
+      autoindex on;
        
     }
         location /notregfile {
