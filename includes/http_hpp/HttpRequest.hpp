@@ -25,6 +25,7 @@ class HttpRequest
         std::map<std::string, std::string> get_headers() const;
         std::string get_body() const;
         std::string get_correct_path() const;
+        std::string get_query() const;
 
         void set_httpmethod(std::string Newhttpmethod);
         void set_requestpath(std::string Newrequestpath);
