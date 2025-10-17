@@ -7,15 +7,12 @@ class Location
 {
     public:
 
-        std::string             path;
-        std::string             root;
-        std::string             autoindex;
-        std::vector<Directive>  directives;
-        TrackPos                position;
-    
-   
-
-    
+        std::string                         path;
+        std::string                         root;
+        std::string                         autoindex;
+        std::map<std::string, std::string>  errors;
+        std::vector<Directive>              directives;
+        TrackPos                            position;    
 };
 
 # endif

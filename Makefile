@@ -20,15 +20,17 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(TKN_SRC_DIR)/TokenizerError.cpp \
               $(CNF_SRC_DIR)/Config.cpp        \
               $(CNF_SRC_DIR)/Parser.cpp         \
-              $(CNF_SRC_DIR)/ParserError.cpp     \
-              $(CNF_SRC_DIR)/parse_directives.cpp \
+              $(CNF_SRC_DIR)/Error_Pages.cpp     \
+              $(CNF_SRC_DIR)/ParserError.cpp      \
+              $(CNF_SRC_DIR)/parse_directives.cpp  \
               $(CORE_SRC_DIR)/CoreError.cpp \
               $(CORE_SRC_DIR)/ServerCore.cpp \
               $(CORE_SRC_DIR)/StartServer.cpp \
               $(HTTP_SRC_DIR)/HttpRequest.cpp  \
-              $(HTTP_SRC_DIR)/HttpHandler.cpp   \
-              $(HTTP_SRC_DIR)/HttpResponse.cpp   \
-              $(HELP_FUNCS_DIR)/into_string.cpp   \
+              
+              $(HTTP_SRC_DIR)/HttpHandler.cpp    \
+              $(HTTP_SRC_DIR)/HttpResponse.cpp    \
+              $(HELP_FUNCS_DIR)/into_string.cpp    \
               $(HTTP_SRC_DIR)/parse_http_request.cpp   \
               $(HELP_FUNCS_DIR)/remove_white_spaces.cpp \
               $(MULTIPLEXING)/EventLoop.cpp  \

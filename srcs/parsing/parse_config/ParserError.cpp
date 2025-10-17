@@ -67,6 +67,16 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
             mesg = "Error: directive " + value + " expects exactly 1 argument in ";
             break;
         }
+        case ErrorCode:
+        {
+            mesg = "Error: directive " + value + " error code must be a number in ";
+            break;
+        }
+        case InvalidNumberArgs2:
+        {
+            mesg = "Error: directive " + value + " expects at least 2 arguments in ";
+            break;
+        }
         case OnOffexpected:
         {
             mesg = "Error: directive " + value + " expects on or off as argument  in ";
@@ -90,6 +100,11 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
         case InvalidPortNumber:
         {
             mesg = "Invalid port number <" + value + "> for listen directive; port must be between 1 and 65535 inclusive in ";
+            break;
+        }
+        case NotPath:
+        {
+            mesg = "Invalid path <" + value + "> for erro_page directive in ";
             break;
         }
         case MissingAddress:

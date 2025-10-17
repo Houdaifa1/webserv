@@ -355,6 +355,7 @@ void HttpHandler::handle_get()
                std::vector<std::string> entries;
                if (connection.location.autoindex == "none" || connection.location.autoindex == "off")
                {
+                    std::cout << "gotta ya\n\n\n";
                     send_simple_response(connection.client_fd, "403 Forbidden");
                }
                else

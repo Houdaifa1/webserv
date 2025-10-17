@@ -265,6 +265,7 @@ void Parser::validate_config(Config &config)
         }
         if (contain_root > 1)
             throw Parsererror(DuplicateRoot , "server", path, 0);
+        parse_error_pages(config.servers[i], path);
     }
 }
 

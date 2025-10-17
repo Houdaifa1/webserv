@@ -50,3 +50,7 @@ void HttpResponse::sendresponse()
     }
     fclose(file);
 }
+
+
+// ERROR INDEX
+

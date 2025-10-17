@@ -7,10 +7,12 @@ server {
 
     client_max_body_size 20M;
     error_page 404 /404.html;
+    error_page 404 403 40dd /404hqhqhq.html;
 
  root /var/www/html ;     
     
     location / {
+        error_page 404 /4004.html;
         allowed_methods POST;
         index index.html index.htm;
         autoindex on ;
@@ -73,8 +75,9 @@ server {
     root /var/www/html;
 
     location / {
-        root /var/www/html;
+        root /;
         index index.html;
+        autoindex on;
     }
 
     location /images {
@@ -113,7 +116,8 @@ server {
     }
     location /webserv {
         root /home/hdrahm/Desktop/webserv/////;
-        autoindex off;
+        index index.httt index.html;
+        autoindex on;
        
     }
         location /notregfile {

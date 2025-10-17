@@ -26,6 +26,9 @@ enum ParserErrorType
     MissingRoot,
     OnOffexpected,
     DuplicateAutoindex,
+    InvalidNumberArgs2,
+    ErrorCode,
+    NotPath,
 };
 
 class Parsererror
