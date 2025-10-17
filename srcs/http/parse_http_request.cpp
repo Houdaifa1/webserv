@@ -79,6 +79,12 @@ bool parse_headers(std::string &request, size_t &index, HttpRequest &req)
         if (key.empty())
             return false;
         req.set_headers(key, value);
+        size_t pos = value.find(":");
+        if (key == "Host")
+        {
+            req.set_host_domain(value.substr(0, pos));
+            req.set_host_port(value.substr(pos + 1));
+        }
         index = end + 2;
         end = request.find("\r\n", index);
         if (end == std::string::npos)
@@ -121,9 +127,19 @@ RequestResult parse_http_request(std::string request, HttpRequest &req)
          
     if (!parse_headers(request, index, req))
         return ERROR;
-    
     index += 2;
+
+    // std::map<std::string, std::string> headers = req.get_headers();
+    // std::map<std::string, std::string>::iterator it;
+
+    // for (it = headers.begin(); it != headers.end(); it++)
+    // {
+    //     std::cout << "key : " << it->first << "   value : " << it->second << "\n";
+    // }
+    std::cout << "youuu" << req.get_host_domain() << " : "<< req.get_host_port() << "\n\n";
+
     return(parse_body(request, index, req));
+
 }
 
 

@@ -10,6 +10,8 @@ std::string HttpRequest::get_body() const {return body;}
 std::map<std::string, std::string> HttpRequest::get_headers() const {return headers;}
 std::string HttpRequest::get_correct_path() const {return correct_path;}
 std::string HttpRequest::get_query() const {return query;}
+std::string HttpRequest::get_host_domain() const {return host_domain;}
+std::string HttpRequest::get_host_port() const {return host_port;}
 
 void HttpRequest::set_httpmethod(std::string Newhttpmethod)
     {httpmethod = Newhttpmethod;}
@@ -28,6 +30,12 @@ void HttpRequest::set_body(std::string Newbody)
 
 void HttpRequest::set_query(std::string Newquery)
     {query = Newquery;}
+
+void HttpRequest::set_host_domain(std::string Newhost_domain)
+    {host_domain = Newhost_domain;}
+
+void HttpRequest::set_host_port(std::string Newhost_port)
+    {host_port = Newhost_port;}
 
 void HttpRequest::set_correct_path(std::string Newcorrect_path)
     {correct_path = Newcorrect_path;}

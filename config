@@ -113,7 +113,7 @@ server {
     }
     location /webserv {
         root /home/hdrahm/Desktop/webserv/////;
-        autoindex on;
+        autoindex off;
        
     }
         location /notregfile {

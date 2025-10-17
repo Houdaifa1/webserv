@@ -354,7 +354,9 @@ void HttpHandler::handle_get()
                struct dirent *entry;
                std::vector<std::string> entries;
                if (connection.location.autoindex == "none" || connection.location.autoindex == "off")
+               {
                     send_simple_response(connection.client_fd, "403 Forbidden");
+               }
                else
                {
                     status_code = 200;
