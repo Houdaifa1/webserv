@@ -12,6 +12,8 @@
 # include "utils_hpp/ConfigUtils.hpp"
 # include "utils_hpp/PostUtils.hpp"
 # include "utils_hpp/ResponseUtils.hpp"
+# include "cgi/cgihandler.hpp"
+# include "signal.h"
 
 enum RequestResult
 {
@@ -29,6 +31,7 @@ std::string     intTo_String(int n);
 RequestResult   parse_http_request(std::string request, HttpRequest &req);
 void            ft_remove_whitespaces(std::string& s);
 void            parse_error_pages(Server &server, std::string &path);
-void normalize_path(std::string &path);
+void            normalize_path(std::string &path);
+void            SignalHandler(int sig);
 
 # endif

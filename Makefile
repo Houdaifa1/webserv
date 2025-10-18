@@ -12,6 +12,7 @@ HELP_FUNCS_DIR = srcs/helper_funcs
 HTTP_SRC_DIR   = srcs/http
 MULTIPLEXING   = srcs/multiplexing
 UTILS_SRC      = srcs/utils
+CGI_SRC        = srcs/cgi
 
 SRC         = $(SRC_DIR)/main.cpp           \
               $(PARS_DIR)/get_cnf.cpp        \
@@ -38,6 +39,8 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(UTILS_SRC)/ConfigUtils.cpp     \
               $(UTILS_SRC)/PostUtils.cpp        \
               $(UTILS_SRC)/ResponseUtils.cpp     \
+              $(UTILS_SRC)/Signals.cpp       \
+              $(CGI_SRC)/cgihandler.cpp       \
 
               
 all: $(NAME)

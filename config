@@ -35,7 +35,8 @@ server {
 
     location /cgi-bin/ {
         allowed_methods GET POST;
-        root /home/doffy/Desktop/work/testing;
+        # root /home/doffy/Desktop/work/testing;
+        root /home/yakhadad/Desktop/testing;
         cgi_path /usr/bin/python3;
         autoindex off;
     }

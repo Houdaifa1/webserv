@@ -134,14 +134,24 @@ void EventLoop::handle_client(int client_fd)
     if (result == SUCCESS)
     {
         HttpHandler handlereq(connection);
+        CgiHandler cgi;
+        cgi.SetEnv(connection, connection.request);
+
         
-        // std::cout << "\n****************************************\n";
+        std::cout << "\n******************* ENV *********************\n";
+
+        cgi.PrintEnv();
+        std::cout << "########### END ############" << std::endl;
+
+        // std::cout << "\n***************** Request *******************\n";
         // std::cout << "Method: " << connection.request.get_httpmethod() << "\n";
         // std::cout << "Version: " << connection.request.get_httpversion() << "\n";
         // std::cout << "Body: " << connection.request.get_body() << "\n";
         // std::cout << "Query: " << connection.request.get_query() << "\n";
         // std::cout << "Request Path: " << connection.request.get_requestpath() << "\n";
         // std::cout << "Correct Path: " << connection.request.get_correct_path() << "\n";
+        // std::cout << "Host Domain: " << connection.request.get_host_domain() << "\n";
+        // std::cout << "Host Port: " << connection.request.get_host_port() << "\n";
         // std::cout << "Server IP: " << connection.server_ip << "\n";
         // std::cout << "Server Port: " << connection.server_port << "\n";
         // std::cout << "Client IP: " << connection.client_ip << "\n";
@@ -194,6 +204,8 @@ void EventLoop::run()
 
     while (true)
     {
+        signal(SIGINT, SignalHandler);
+        signal(SIGQUIT, SignalHandler);
         int n = epoll_wait(epoll_fd, events.data(), MAX_EVENTS, -1);
         if (n < 0)
         {

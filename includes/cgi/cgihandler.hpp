@@ -6,10 +6,12 @@
 class CgiHandler {
     private:
         std::vector<std::string> env;
-        void SetHeader (std::vector<std::string> &env, HttpRequest &req);
+        void SetHeaders(std::vector<std::string> &env, HttpRequest &req);
+        void SetHttpHeaders(std::vector<std::string> &env, HttpRequest &req);
     public:
         CgiHandler();
         void SetEnv(Connection &conn, HttpRequest &req);    
+        void PrintEnv();
 };
 
 #endif
