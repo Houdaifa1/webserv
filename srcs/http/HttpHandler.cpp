@@ -8,7 +8,13 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
 
      correct_path();
      check_final_path();
-     handle_get();
+     std::string method = connection.request.get_httpmethod();
+     if (method == "GET")
+          handle_get();
+     if (method == "POST")
+          handle_post();
+     else if (method == "DELETE")
+          handle_delete();
 }
 
 bool check_is_hex(char h)
@@ -130,7 +136,6 @@ void normalize_path(std::string &path)
      if (path[0] == '/')
           is_absolute = true;
      std::vector<std::string> list = split_path(path);
-
      std::vector<std::string> stack;
      for (size_t i = 0; i < list.size(); i++)
      {
@@ -189,8 +194,27 @@ bool find_location(const Server &server, const std::string &normalized_path, Loc
      return found;
 }
 
+bool check_allowed_method(const std::string& method, const Location& location)
+{
+    for (size_t i = 0; i < location.directives.size(); ++i)
+    {
+        if (location.directives[i].name == "allowed_methods")
+        {
+            for (size_t j = 0; j < location.directives[i].args.size(); ++j)
+            {
+                if (location.directives[i].args[j] == method)
+                    return true;
+            }
+            return false;
+        }
+    }
+    return false;
+}
+
 void HttpHandler::correct_path()
 {
+     ErrorHandler error_mesg(connection.location, connection);
+
      std::string raw_path = connection.request.get_requestpath();
      std::string query;
 
@@ -204,12 +228,12 @@ void HttpHandler::correct_path()
 
      raw_path = raw_path.substr(0, index);
      if (!decode_path(raw_path))
-          std::cout << "error in decoding\n";
+          error_mesg.generate_error_response(404);
      normalize_path(raw_path);
-     std::cout << "Normalized path: " << raw_path << "\n";
      if (!find_location(connection.server, raw_path, connection.location))
-          std::cout << "Error: no matching location found\n";
-
+          error_mesg.generate_error_response(404);
+     if (!check_allowed_method(connection.request.get_httpmethod(), connection.location))
+          error_mesg.generate_error_response(405);
      std::string loc_path = connection.location.path;
      normalize_path(loc_path);
      connection.request.set_correct_path(raw_path.substr(loc_path.size()));
@@ -330,10 +354,16 @@ void HttpHandler::handle_get()
 {
      int status_code;
      PathCheck check = check_path_exist(connection.request_full_path);
+     ErrorHandler error_mesg(connection.location, connection);
 
      if (check == Error)
      {
-          send_simple_response(connection.client_fd, "403 Forbidden");
+          error_mesg.generate_error_response(403);
+          return;
+     }
+     if (check == NotFound)
+     {
+          error_mesg.generate_error_response(404);
           return;
      }
      if (check == Directory)
@@ -355,8 +385,7 @@ void HttpHandler::handle_get()
                std::vector<std::string> entries;
                if (connection.location.autoindex == "none" || connection.location.autoindex == "off")
                {
-                    std::cout << "gotta ya\n\n\n";
-                    send_simple_response(connection.client_fd, "403 Forbidden");
+                    error_mesg.generate_error_response(403);
                }
                else
                {
@@ -389,18 +418,23 @@ void HttpHandler::handle_get()
           HttpResponse response(connection, status_code, type, file_size, connection.request_full_path);
           response.sendresponse();
      }
+
 }
 
 void HttpHandler::handle_post()
 {
+     ErrorHandler error_mesg(connection.location, connection);
+
      std::string correct_path = connection.request.get_correct_path();
      if (!is_method_allowed(connection.location, "POST"))
      {
+          error_mesg.generate_error_response(405);
           send_simple_response(connection.client_fd, "405 Method Not Allowed");
           return;
      }
      if (connection.request.is_chunked())
      {
+          error_mesg.generate_error_response(501);
           send_simple_response(connection.client_fd, "501 Not Implemented");
           return;
      }
@@ -419,19 +453,19 @@ void HttpHandler::handle_post()
           is_dir_request = true;
      if (relative_path.empty() || is_dir_request || !dir_exists(parent_dir))
      {
-          send_simple_response(connection.client_fd, "404 Not Found");
+          error_mesg.generate_error_response(404);
           return;
      }
      if (!is_writable_dir(parent_dir))
      {
-          send_simple_response(connection.client_fd, "403 Forbidden");
+          error_mesg.generate_error_response(403);
           return;
      }
 
      std::ofstream ofs(fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
      if (!ofs.is_open() || !ofs.good())
      {
-          send_simple_response(connection.client_fd, "500 Internal Server Error");
+          error_mesg.generate_error_response(500);
           return;
      }
      const std::string &body = connection.request.get_body();
@@ -439,7 +473,7 @@ void HttpHandler::handle_post()
      if (!ofs.good())
      {
           ofs.close();
-          send_simple_response(connection.client_fd, "500 Internal Server Error");
+          error_mesg.generate_error_response(500);
           return;
      }
      ofs.close();

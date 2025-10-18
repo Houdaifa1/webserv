@@ -27,7 +27,7 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(CORE_SRC_DIR)/ServerCore.cpp \
               $(CORE_SRC_DIR)/StartServer.cpp \
               $(HTTP_SRC_DIR)/HttpRequest.cpp  \
-              
+              $(HTTP_SRC_DIR)/ErrorHandler.cpp  \
               $(HTTP_SRC_DIR)/HttpHandler.cpp    \
               $(HTTP_SRC_DIR)/HttpResponse.cpp    \
               $(HELP_FUNCS_DIR)/into_string.cpp    \

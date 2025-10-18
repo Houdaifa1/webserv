@@ -134,7 +134,7 @@ void EventLoop::handle_client(int client_fd)
     if (result == SUCCESS)
     {
         HttpHandler handlereq(connection);
-        std::string method = connection.request.get_httpmethod();
+        
         // std::cout << "\n****************************************\n";
         // std::cout << "Method: " << connection.request.get_httpmethod() << "\n";
         // std::cout << "Version: " << connection.request.get_httpversion() << "\n";
@@ -152,13 +152,7 @@ void EventLoop::handle_client(int client_fd)
         //     std::cout << pair.first << " = " << pair.second << std::endl;
         // }
         // std::cout << "########### END ############" << std::endl;
-
-        // if (method == "GET")
-        //     handlereq.handle_get();
-        if (method == "POST")
-            handlereq.handle_post();
-        else if (method == "DELETE")
-            handlereq.handle_delete();
+        
         std::cout << "Parsed request from client " << client_fd << std::endl;
         std::cout << "Method: " << connection.request.get_httpmethod() << std::endl;
         std::cout << "Path: " << connection.request.get_requestpath() << std::endl;

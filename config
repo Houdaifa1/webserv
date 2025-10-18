@@ -7,7 +7,7 @@ server {
 
     client_max_body_size 20M;
     error_page 404 /404.html;
-    error_page 404 403 40dd /404hqhqhq.html;
+    error_page 404 403 4545 /404hqhqhq.html;
 
  root /var/www/html ;     
     
@@ -74,9 +74,14 @@ server {
     listen 5555;
     root /var/www/html;
 
+    error_page 403 /errors/403.html;
+    error_page 404 /errors/404.html;
+    error_page 405 /errors/405.html;
+    error_page 500 /errors/500.html;
+    
     location / {
         root /;
-        index index.html;
+       allowed_methods GET;
         autoindex on;
     }
 
@@ -93,8 +98,9 @@ server {
     }
 
     location /docs {
-        root /var/www/html/docs;
-        autoindex on;
+        root ///////var/www/html/docs;
+        error_page 404 //////////////////////////404asdasdasdasdasdasdasdasdsadsa.html;
+        autoindex off;
         index doc-index.html;
     }
 
@@ -115,8 +121,9 @@ server {
         autoindex off;
     }
     location /webserv {
+        allowed_methods GET POST;
         root /home/hdrahm/Desktop/webserv/////;
-        index index.httt index.html;
+        index index.html;
         autoindex on;
        
     }

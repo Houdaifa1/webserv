@@ -15,15 +15,54 @@ HttpResponse::HttpResponse(int status, Connection &connection, const std::string
       content_length(length),
       body_string(body) {}
 
+
+std::string get_error(int code)
+{
+    switch (code)
+    {
+        case 200:
+            return "OK";
+        case 201:
+            return "Created";
+        case 204:
+            return "No Content";
+        case 301:
+            return "Moved Permanently";
+        case 302:
+            return "Found";
+        case 400:
+            return "Bad Request";
+        case 403:
+            return "Forbidden";
+        case 404:
+            return "Not Found";
+        case 405:
+            return "Method Not Allowed";
+        case 413:
+            return "Payload Too Large";
+        case 500:
+            return "Internal Server Error";
+        case 502:
+            return "Bad Gateway";
+        case 503:
+            return "Service Unavailable";
+        default:
+            return "Unknown";
+    }
+}
+
 std::string HttpResponse::build_headers()
 {
-    std::string headersStr = "HTTP/1.1 " + intTo_String(status_code) + " ok\r\n";
+    std::string headersStr = "HTTP/1.1 " 
+        + intTo_String(status_code) + " " 
+        + get_error(status_code) + "\r\n";
+
     headersStr += "Content-Type: " + content_type + "\r\n";
     headersStr += "Content-Length: " + intTo_String(content_length) + "\r\n";
     headersStr += "\r\n";
+
     return headersStr;
 }
-
 
 
 void HttpResponse::sendresponse()
