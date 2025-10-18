@@ -15,7 +15,6 @@ class EventLoop
         std::set<int> listening_fds;
         std::map<int, std::string>  client_buffers;
         std::map<int, Connection>   connections;
-
     public:
         EventLoop(ServerCore &srv);
         ~EventLoop();

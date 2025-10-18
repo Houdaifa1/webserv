@@ -2,7 +2,7 @@
 
 CgiHandler::CgiHandler() {}
 
-void CgiHandler::SetHeader (std::vector<std::string> &env, HttpRequest &req)
+void CgiHandler::SetHeader(std::vector<std::string> &env, HttpRequest &req)
 {
     std::map<std::string, std::string> headers = req.get_headers();
     std::vector<std::string> index = {"Content-Type", "Content-Length", "Host"};
@@ -33,11 +33,13 @@ void CgiHandler::SetHeader (std::vector<std::string> &env, HttpRequest &req)
     }
 }
 
-void CgiHandler::SetEnv(HttpRequest &req) {
+void CgiHandler::SetEnv(Connection &conn, HttpRequest &req) {
     SetHeader(env, req);
     env.push_back("REQUEST_METHOD=" + req.get_httpmethod());
-    env.push_back("REQUEST_PROTOCOL=" + req.get_httpversion());
+    env.push_back("SERVER_PROTOCOL=" + req.get_httpversion());
     env.push_back("REDIRECT_STATUS=200");
     env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    env.push_back("QUERY_STRING" + req.get_query());
+    env.push_back("QUERY_STRING=" + req.get_query());
+    env.push_back("SCRIPT_NAME=/cgi-bin/" + req.get_correct_path());
+    env.push_back("PATH_TRANSLATED=" + (conn.location.root + req.get_correct_path()));
 }

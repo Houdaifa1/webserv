@@ -33,6 +33,13 @@ server {
           root /var/www/html ;
     }
 
+    location /cgi-bin/ {
+        allowed_methods GET POST;
+        root /home/doffy/Desktop/work/testing;
+        cgi_path /usr/bin/python3;
+        autoindex off;
+    }
+
     location /redirect-44me/ {
         return 301 "http://www.example.com/";
          
@@ -137,3 +144,5 @@ server {
         index blog-index.html;
     }
 }
+
+
