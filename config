@@ -20,9 +20,9 @@ server {
     }
 
     location /api/ {
-        allowed_methods POST;
+        allowed_methods  POST GET;
         autoindex on;
-        root /home/nirou/va/ww/html ;
+        root /home/momazouz/va/ww/html ;
         
     }
 
@@ -36,8 +36,6 @@ server {
     location /redirect-44me/ {
         return 301 "http://www.example.com/";
          
-             
-
          
     }
 }

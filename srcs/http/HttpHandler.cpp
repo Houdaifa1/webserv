@@ -11,7 +11,7 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
      std::string method = connection.request.get_httpmethod();
      if (method == "GET")
           handle_get();
-     if (method == "POST")
+     else if (method == "POST")
           handle_post();
      else if (method == "DELETE")
           handle_delete();
@@ -423,18 +423,37 @@ void HttpHandler::handle_get()
 
 void HttpHandler::handle_post()
 {
-     ErrorHandler error_mesg(connection.location, connection);
-
      std::string correct_path = connection.request.get_correct_path();
      if (!is_method_allowed(connection.location, "POST"))
      {
-          error_mesg.generate_error_response(405);
+          std::cout << "entere inside the method not allowed" << "\n\n";
           send_simple_response(connection.client_fd, "405 Method Not Allowed");
           return;
      }
+     std::cout << "enter after find not allowed method " << "\n\n";
+     std::string  len_str =  get_header_value(connection.request, "Content-Length");
+     size_t    client_max_body_size = get_client_max_body_size(connection.server);
+
+     std::cout << "len_str: " << len_str << std::endl;
+     std::cout << "client_max_body_size: " << client_max_body_size << std::endl;
+     if (len_str.empty() && !connection.request.is_chunked())
+     {
+          send_simple_response(connection.client_fd, "411 Length Required");
+          return ;
+     }
+     if (!len_str.empty() && client_max_body_size > 0)
+     {
+          size_t    len = std::atoi(len_str.c_str());
+          std::cout << "len: " << len << std::endl;
+          if (len > client_max_body_size)
+          {
+               std::cout << "enter and send 413" << std::endl;
+               send_simple_response(connection.client_fd, "413 Payload Too Large");
+               return ;
+          }
+     }
      if (connection.request.is_chunked())
      {
-          error_mesg.generate_error_response(501);
           send_simple_response(connection.client_fd, "501 Not Implemented");
           return;
      }
@@ -453,27 +472,29 @@ void HttpHandler::handle_post()
           is_dir_request = true;
      if (relative_path.empty() || is_dir_request || !dir_exists(parent_dir))
      {
-          error_mesg.generate_error_response(404);
+          send_simple_response(connection.client_fd, "404 Not Found");
           return;
      }
      if (!is_writable_dir(parent_dir))
      {
-          error_mesg.generate_error_response(403);
+          send_simple_response(connection.client_fd, "403 Forbidden");
           return;
      }
 
      std::ofstream ofs(fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
      if (!ofs.is_open() || !ofs.good())
      {
-          error_mesg.generate_error_response(500);
+          std::cout << "first if ofs.is_open: " << std::endl;
+          send_simple_response(connection.client_fd, "500 Internal Server Error");
           return;
      }
      const std::string &body = connection.request.get_body();
      ofs.write(body.c_str(), body.size());
      if (!ofs.good())
      {
+          std::cout << "second if ofs.good: " << std::endl;
           ofs.close();
-          error_mesg.generate_error_response(500);
+          send_simple_response(connection.client_fd, "500 Internal Server Error");
           return;
      }
      ofs.close();
