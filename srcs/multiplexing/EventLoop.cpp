@@ -6,6 +6,7 @@
 #include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
+# include "../../includes/cgi/cgihandler.hpp"
 
 EventLoop::EventLoop(ServerCore &srv) : server(srv)
 {
@@ -134,13 +135,13 @@ void EventLoop::handle_client(int client_fd)
     if (result == SUCCESS)
     {
         HttpHandler handlereq(connection);
-        CgiHandler cgi;
-        cgi.SetEnv(connection, connection.request);
+        CgiHandler cgi(connection, connection.request);
+        cgi.environment.SetEnv();
 
         
         std::cout << "\n******************* ENV *********************\n";
 
-        cgi.PrintEnv();
+        cgi.environment.PrintEnv();
         std::cout << "########### END ############" << std::endl;
 
         // std::cout << "\n***************** Request *******************\n";

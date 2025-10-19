@@ -2,16 +2,16 @@
 #define CGIHANDLER_HPP
 
 #include "../webserv.hpp"
+#include "Environment.hpp"
 
 class CgiHandler {
     private:
-        std::vector<std::string> env;
-        void SetHeaders(std::vector<std::string> &env, HttpRequest &req);
-        void SetHttpHeaders(std::vector<std::string> &env, HttpRequest &req);
+        const std::string name;
     public:
-        CgiHandler();
-        void SetEnv(Connection &conn, HttpRequest &req);    
-        void PrintEnv();
+        Environment environment;
+        CgiHandler(Connection &conn, HttpRequest &req);
+        std::vector<std::string> GetEnv();
+        
 };
 
 #endif

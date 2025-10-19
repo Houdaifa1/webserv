@@ -41,6 +41,7 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(UTILS_SRC)/ResponseUtils.cpp     \
               $(UTILS_SRC)/Signals.cpp       \
               $(CGI_SRC)/cgihandler.cpp       \
+              $(CGI_SRC)/Environment.cpp       \
 
               
 all: $(NAME)
