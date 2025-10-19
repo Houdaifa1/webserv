@@ -3,7 +3,7 @@
 
 #include "../Libraries.hpp"
 
-void send_simple_response(int fd, const std::string &status_line);
-void send_created_response(int fd, const std::string &location);
+void send_created_html(int client_fd, const std::string &path);
+void    send_delete_confirmation(int client_fd, const std::string &path);
 
 #endif

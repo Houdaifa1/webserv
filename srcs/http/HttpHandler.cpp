@@ -424,13 +424,12 @@ void HttpHandler::handle_get()
 void HttpHandler::handle_post()
 {
      std::string correct_path = connection.request.get_correct_path();
+     ErrorHandler error_mesg(connection.location, connection);
      if (!is_method_allowed(connection.location, "POST"))
      {
-          std::cout << "entere inside the method not allowed" << "\n\n";
-          send_simple_response(connection.client_fd, "405 Method Not Allowed");
+          error_mesg.generate_error_response(405);
           return;
      }
-     std::cout << "enter after find not allowed method " << "\n\n";
      std::string  len_str =  get_header_value(connection.request, "Content-Length");
      size_t    client_max_body_size = get_client_max_body_size(connection.server);
 
@@ -438,7 +437,7 @@ void HttpHandler::handle_post()
      std::cout << "client_max_body_size: " << client_max_body_size << std::endl;
      if (len_str.empty() && !connection.request.is_chunked())
      {
-          send_simple_response(connection.client_fd, "411 Length Required");
+          error_mesg.generate_error_response(411);
           return ;
      }
      if (!len_str.empty() && client_max_body_size > 0)
@@ -448,60 +447,89 @@ void HttpHandler::handle_post()
           if (len > client_max_body_size)
           {
                std::cout << "enter and send 413" << std::endl;
-               send_simple_response(connection.client_fd, "413 Payload Too Large");
+               error_mesg.generate_error_response(413);
                return ;
           }
      }
      if (connection.request.is_chunked())
      {
-          send_simple_response(connection.client_fd, "501 Not Implemented");
+          error_mesg.generate_error_response(501);
           return;
      }
      std::string server_root = resolve_upload_path(connection.location);
-     std::string location_path = connection.location.path;
-     std::string relative_path = correct_path;
-     if (relative_path.find(location_path) == 0)
-          relative_path.erase(0, location_path.length());
-     std::string fullpath = make_fullpath(server_root, relative_path);
+     std::string fullpath = make_fullpath(server_root, correct_path);
      std::string parent_dir = get_parent_dir(fullpath);
-
-     bool is_dir_request = false;
-     if (!correct_path.empty() && correct_path[correct_path.size() - 1] == '/')
-          is_dir_request = true;
-     else if (correct_path == location_path.substr(0, location_path.size() - 1))
-          is_dir_request = true;
-     if (relative_path.empty() || is_dir_request || !dir_exists(parent_dir))
+     std::cout << "parent direcotry : " << parent_dir << std::endl;
+     if (correct_path.empty() || !dir_exists(parent_dir))
      {
-          send_simple_response(connection.client_fd, "404 Not Found");
+          std::cout << "entere here 404 not found " << std::endl;
+          error_mesg.generate_error_response(404);
           return;
      }
      if (!is_writable_dir(parent_dir))
      {
-          send_simple_response(connection.client_fd, "403 Forbidden");
+          error_mesg.generate_error_response(403);
           return;
      }
-
+     if (file_exists(fullpath) && !is_writable_file(fullpath))
+     {
+          error_mesg.generate_error_response(403);
+          return;
+     }
      std::ofstream ofs(fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
      if (!ofs.is_open() || !ofs.good())
      {
-          std::cout << "first if ofs.is_open: " << std::endl;
-          send_simple_response(connection.client_fd, "500 Internal Server Error");
+          error_mesg.generate_error_response(500);
           return;
      }
      const std::string &body = connection.request.get_body();
      ofs.write(body.c_str(), body.size());
      if (!ofs.good())
      {
-          std::cout << "second if ofs.good: " << std::endl;
           ofs.close();
-          send_simple_response(connection.client_fd, "500 Internal Server Error");
+          error_mesg.generate_error_response(500);
           return;
      }
      ofs.close();
-     send_created_response(connection.client_fd, correct_path);
-     // todo tomorrow : check the content lenght , and Check  client_max_body_size
+     send_created_html(connection.client_fd, correct_path);
 }
 
 void HttpHandler::handle_delete()
 {
+     std::string    correct_path = connection.request.get_correct_path();
+     ErrorHandler   error_mesg(connection.location, connection);
+     if (!is_method_allowed(connection.location, "DELETE"))
+     {
+          std::cout << "enter isnide method not allowed on DELETE" << std::endl;
+          error_mesg.generate_error_response(405);
+          return;
+     }
+     std::string    server_root = resolve_upload_path(connection.location);
+     std::string    fullpath = make_fullpath(server_root, correct_path);
+
+     struct stat    st;
+     if (stat(fullpath.c_str(), &st) != 0)
+     {
+          error_mesg.generate_error_response(404);
+          return;
+     }
+     if (S_ISDIR(st.st_mode))
+     {
+          error_mesg.generate_error_response(403);
+          return ;
+     }
+
+     std::string    parent_dir = get_parent_dir(fullpath);
+     if (!is_writable_dir(parent_dir))
+     {
+          error_mesg.generate_error_response(403);
+          return ;
+     }
+
+     if (unlink(fullpath.c_str()) != 0)
+     {
+          error_mesg.generate_error_response(500);
+          return ;
+     }
+     send_delete_confirmation(connection.client_fd, correct_path);
 }

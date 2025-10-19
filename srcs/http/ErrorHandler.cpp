@@ -11,11 +11,13 @@ std::string build_error_body(int code, const std::string& server = "MyWebServer/
 {
     std::map<int, std::string> error_mesg;
     error_mesg[400] = "Bad Request";
+    error_mesg[201] = "Created";
     error_mesg[401] = "Unauthorized";
     error_mesg[403] = "Forbidden";
     error_mesg[404] = "Not Found";
     error_mesg[405] = "Method Not Allowed";
     error_mesg[408] = "Request Timeout";
+    error_mesg[411] = "Length Required";
     error_mesg[413] = "Payload Too Large";
     error_mesg[414] = "URI Too Long";
     error_mesg[500] = "Internal Server Error";

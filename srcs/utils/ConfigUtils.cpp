@@ -46,8 +46,6 @@ std::string resolve_upload_path(const Location &loc)
         normalize_path(loc_root);
         return loc_root;
     }
-    
-    // return "/var/www/html";
 }
 
 std::string make_fullpath(const std::string &base, const std::string &req_path)

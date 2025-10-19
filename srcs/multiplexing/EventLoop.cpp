@@ -14,7 +14,7 @@ EventLoop::EventLoop(ServerCore &srv) : server(srv)
     if (epoll_fd < 0)
     {
         perror("epoll_create1");
-        exit(1);
+        std::exit(1);
     }
     struct epoll_event ev;
     std::map<std::pair<std::string, int>, int>::iterator it;
@@ -29,7 +29,7 @@ EventLoop::EventLoop(ServerCore &srv) : server(srv)
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listen_fd, &ev) < 0)
         {
             perror("epoll_ctl listen_fd");
-            exit(1);
+            std::exit(1);
         }
         listening_fds.insert(listen_fd);
         std::cout << "Listening on FD: " << listen_fd << std::endl;

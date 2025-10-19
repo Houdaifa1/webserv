@@ -64,3 +64,20 @@ size_t  get_client_max_body_size(const Server &server)
     }
     return 0;
 }
+
+bool file_exists(const std::string &path)
+{
+    struct stat st;
+    if (stat(path.c_str(), &st) == 0)
+        return S_ISREG(st.st_mode);
+    return false;
+}
+
+bool is_writable_file(const std::string &path)
+{
+    if (access(path.c_str(), F_OK) != 0)
+        return false;
+    if (access(path.c_str(), W_OK) == 0)
+        return true;
+    return false;
+}
