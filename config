@@ -13,7 +13,7 @@ server {
     
     location / {
         error_page 404 /4004.html;
-        allowed_methods POST;
+        allowed_methods POST GET;
         index index.html index.htm;
         autoindex on ;
           root /var/www/haha;
@@ -24,6 +24,13 @@ server {
         autoindex on;
         root /home/momazouz/va/ww/html ;
         
+    }
+
+    location /cgi/ {
+        allowed_methods GET POST;
+        root /home/nirou/cgi;
+        cgi_path /home/nirou/cgi;
+        autoindex off;
     }
 
     location /test/ {

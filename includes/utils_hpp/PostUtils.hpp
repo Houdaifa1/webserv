@@ -14,5 +14,6 @@ size_t  parse_size_vlue(const std::string &val);
 size_t get_client_max_body_size(const Server &server);
 bool file_exists(const std::string &path);
 bool is_writable_file(const std::string &path);
+bool is_cgi_request(const Location &loc, const std::string &fullpath);
 
 #endif

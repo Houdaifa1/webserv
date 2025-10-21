@@ -81,3 +81,27 @@ bool is_writable_file(const std::string &path)
         return true;
     return false;
 }
+
+
+bool is_cgi_request(const Location &loc, const std::string &fullpath)
+{
+    std::string cgi_path;
+    for (size_t i = 0; i < loc.directives.size(); ++i)
+    {
+        if (loc.directives[i].name == "cgi_path")
+        {
+            cgi_path = loc.directives[i].args[0];
+            break;
+        }
+    }
+    std::cout << "sgi_path: " << cgi_path << "\n\n\n";
+    if (cgi_path.empty())
+        return false;
+    size_t dot = fullpath.find_last_of('.');
+    if (dot == std::string::npos)
+        return false;
+    std::string ext = fullpath.substr(dot);
+    if (ext == ".php" || ext == ".py" || ext == ".sh")
+        return true;
+    return false;
+}

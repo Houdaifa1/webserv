@@ -476,6 +476,13 @@ void HttpHandler::handle_post()
           error_mesg.generate_error_response(403);
           return;
      }
+     if (is_cgi_request(connection.location, fullpath))
+     {
+          std::cout << "CGI request detected for: " << fullpath << "\n\n\n";
+          // CgiHandler cgi(connection);
+          // cgi.execute(fullpath);
+          return;
+     }
      std::ofstream ofs(fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
      if (!ofs.is_open() || !ofs.good())
      {

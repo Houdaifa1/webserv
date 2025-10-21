@@ -128,7 +128,6 @@ void EventLoop::handle_client(int client_fd)
         }
         if (bytes < (int)sizeof(buffer))
             break;
-
     }
     RequestResult result = parse_http_request(connection.buffer, connection.request);
    
