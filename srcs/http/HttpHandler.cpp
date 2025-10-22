@@ -479,8 +479,7 @@ void HttpHandler::handle_post()
      if (is_cgi_request(connection.location, fullpath))
      {
           std::cout << "CGI request detected for: " << fullpath << "\n\n\n";
-          // CgiHandler cgi(connection);
-          // cgi.execute(fullpath);
+          // yakhadad handle CGI here 
           return;
      }
      std::ofstream ofs(fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);

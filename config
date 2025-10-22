@@ -7,7 +7,7 @@ server {
 
     client_max_body_size 1G;
     error_page 404 /404.html;
-    error_page 404 403 4545 /404hqhqhq.html;
+    error_page 404 403 4545 /404.html;
 
  root /var/www/html ;     
     
@@ -33,6 +33,10 @@ server {
         autoindex off;
     }
 
+    location /suu/ {
+        allowed_methods POST;
+        root /home/nirou/cgi;
+    }
     location /test/ {
        allowed_methods POST;
         autoindex on;
@@ -54,8 +58,6 @@ server {
          
     }
 }
-
-
 
 
 server {

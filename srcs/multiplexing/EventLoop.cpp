@@ -142,37 +142,12 @@ void EventLoop::handle_client(int client_fd)
 
         cgi.environment.PrintEnv();
         std::cout << "########### END ############" << std::endl;
-
-        // std::cout << "\n***************** Request *******************\n";
-        // std::cout << "Method: " << connection.request.get_httpmethod() << "\n";
-        // std::cout << "Version: " << connection.request.get_httpversion() << "\n";
-        // std::cout << "Body: " << connection.request.get_body() << "\n";
-        // std::cout << "Query: " << connection.request.get_query() << "\n";
-        // std::cout << "Request Path: " << connection.request.get_requestpath() << "\n";
-        // std::cout << "Correct Path: " << connection.request.get_correct_path() << "\n";
-        // std::cout << "Host Domain: " << connection.request.get_host_domain() << "\n";
-        // std::cout << "Host Port: " << connection.request.get_host_port() << "\n";
-        // std::cout << "Server IP: " << connection.server_ip << "\n";
-        // std::cout << "Server Port: " << connection.server_port << "\n";
-        // std::cout << "Client IP: " << connection.client_ip << "\n";
-        // std::cout << "CLient Port: " << connection.client_port << "\n";
-        // std::cout << "CLient fd: " << connection.client_fd << "\n";
-        // std::cout << "######### Headers ###########" << std::endl;
-        // for (const auto &pair : connection.request.get_headers()) {
-        //     std::cout << pair.first << " = " << pair.second << std::endl;
-        // }
-        // std::cout << "########### END ############" << std::endl;
-        
-        std::cout << "Parsed request from client " << client_fd << std::endl;
-        std::cout << "Method: " << connection.request.get_httpmethod() << std::endl;
-        std::cout << "Path: " << connection.request.get_requestpath() << std::endl;
-        std::cout << "Version: " << connection.request.get_httpversion() << std::endl;
         
         connection.buffer.clear();
         close(client_fd);
         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
         connections.erase(it);
-        // todo after method: add timeouts , and keep-alive (3lahsab) 
+        // todo after method: add timeouts
     }
     else if (result == INCOMPLETE)
     {
@@ -194,7 +169,6 @@ void EventLoop::handle_client(int client_fd)
     }
     
 }
-
 void EventLoop::run()
 {
     int fd;
