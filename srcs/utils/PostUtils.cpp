@@ -94,7 +94,6 @@ bool is_cgi_request(const Location &loc, const std::string &fullpath)
             break;
         }
     }
-    std::cout << "sgi_path: " << cgi_path << "\n\n\n";
     if (cgi_path.empty())
         return false;
     size_t dot = fullpath.find_last_of('.');

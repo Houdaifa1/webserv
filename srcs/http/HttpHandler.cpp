@@ -247,7 +247,7 @@ void HttpHandler::check_final_path()
      std::string final_path = root + "/" + request_path;
      normalize_path(final_path);
      connection.request_full_path = final_path;
-     std::cout << "\n\ncorrect path : " << final_path << "\n\n";
+     // std::cout << "\n\ncorrect path : " << final_path << "\n\n";
 }
 
 PathCheck HttpHandler::check_path_exist(std::string path)
@@ -433,8 +433,6 @@ void HttpHandler::handle_post()
      std::string  len_str =  get_header_value(connection.request, "Content-Length");
      size_t    client_max_body_size = get_client_max_body_size(connection.server);
 
-     std::cout << "len_str: " << len_str << std::endl;
-     std::cout << "client_max_body_size: " << client_max_body_size << std::endl;
      if (len_str.empty() && !connection.request.is_chunked())
      {
           error_mesg.generate_error_response(411);
@@ -443,10 +441,8 @@ void HttpHandler::handle_post()
      if (!len_str.empty() && client_max_body_size > 0)
      {
           size_t    len = std::atoi(len_str.c_str());
-          std::cout << "len: " << len << std::endl;
           if (len > client_max_body_size)
           {
-               std::cout << "enter and send 413" << std::endl;
                error_mesg.generate_error_response(413);
                return ;
           }
@@ -459,10 +455,8 @@ void HttpHandler::handle_post()
      std::string server_root = resolve_upload_path(connection.location);
      std::string fullpath = make_fullpath(server_root, correct_path);
      std::string parent_dir = get_parent_dir(fullpath);
-     std::cout << "parent direcotry : " << parent_dir << std::endl;
      if (correct_path.empty() || !dir_exists(parent_dir))
      {
-          std::cout << "entere here 404 not found " << std::endl;
           error_mesg.generate_error_response(404);
           return;
      }
