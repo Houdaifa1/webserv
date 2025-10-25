@@ -8,6 +8,12 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
 
      correct_path();
      check_final_path();
+     std::string    req_path = connection.request.get_correct_path();
+     if (is_cgi_request(connection.location, req_path))
+     {
+          std::cout << "CGI request detected for: " << req_path << std::endl;
+          return ;
+     }
      std::string method = connection.request.get_httpmethod();
      if (method == "GET")
           handle_get();
@@ -16,7 +22,6 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
      else if (method == "DELETE")
           handle_delete();
 }
-
 bool check_is_hex(char h)
 {
      bool check = false;
@@ -423,75 +428,66 @@ void HttpHandler::handle_get()
 
 void HttpHandler::handle_post()
 {
-     std::string correct_path = connection.request.get_correct_path();
-     ErrorHandler error_mesg(connection.location, connection);
-     if (!is_method_allowed(connection.location, "POST"))
-     {
-          error_mesg.generate_error_response(405);
-          return;
-     }
-     std::string  len_str =  get_header_value(connection.request, "Content-Length");
-     size_t    client_max_body_size = get_client_max_body_size(connection.server);
+    std::string correct_path = connection.request.get_correct_path();
+    ErrorHandler error_mesg(connection.location, connection);
 
-     if (len_str.empty() && !connection.request.is_chunked())
-     {
-          error_mesg.generate_error_response(411);
-          return ;
-     }
-     if (!len_str.empty() && client_max_body_size > 0)
-     {
-          size_t    len = std::atoi(len_str.c_str());
-          if (len > client_max_body_size)
-          {
-               error_mesg.generate_error_response(413);
-               return ;
-          }
-     }
-     if (connection.request.is_chunked())
-     {
-          error_mesg.generate_error_response(501);
-          return;
-     }
-     std::string server_root = resolve_upload_path(connection.location);
-     std::string fullpath = make_fullpath(server_root, correct_path);
-     std::string parent_dir = get_parent_dir(fullpath);
-     if (correct_path.empty() || !dir_exists(parent_dir))
-     {
-          error_mesg.generate_error_response(404);
-          return;
-     }
-     if (!is_writable_dir(parent_dir))
-     {
-          error_mesg.generate_error_response(403);
-          return;
-     }
-     if (file_exists(fullpath) && !is_writable_file(fullpath))
-     {
-          error_mesg.generate_error_response(403);
-          return;
-     }
-     if (is_cgi_request(connection.location, fullpath))
-     {
-          std::cout << "CGI request detected for: " << fullpath << "\n\n\n";
-          // yakhadad handle CGI here 
-          return;
-     }
-     std::ofstream ofs(fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
-     if (!ofs.is_open() || !ofs.good())
-     {
-          error_mesg.generate_error_response(500);
-          return;
-     }
-     const std::string &body = connection.request.get_body();
-     ofs.write(body.c_str(), body.size());
-     if (!ofs.good())
-     {
-          ofs.close();
-          error_mesg.generate_error_response(500);
-          return;
-     }
-     ofs.close();
-     send_created_html(connection.client_fd, correct_path);
+    if (!is_method_allowed(connection.location, "POST"))
+    {
+        error_mesg.generate_error_response(405);
+        return;
+    }
+    std::string len_str = get_header_value(connection.request, "Content-Length");
+    size_t client_max_body_size = get_client_max_body_size(connection.server);
+
+    if (len_str.empty() && !connection.request.is_chunked())
+    {
+        error_mesg.generate_error_response(411);
+        return;
+    }
+    if (!len_str.empty() && client_max_body_size > 0)
+    {
+        size_t len = std::atoi(len_str.c_str());
+        if (len > client_max_body_size)
+        {
+            error_mesg.generate_error_response(413);
+            return;
+        }
+    }
+    if (connection.request.is_chunked())
+    {
+        error_mesg.generate_error_response(501);
+        return;
+    }
+    std::string server_root = resolve_upload_path(connection.location);
+    std::string fullpath = make_fullpath(server_root, correct_path);
+    if (!dir_exists(fullpath))
+    {
+        error_mesg.generate_error_response(404);
+        return;
+    }
+    if (!is_writable_dir(fullpath))
+    {
+        error_mesg.generate_error_response(403);
+        return;
+    }
+    std::string content_type = get_header_value(connection.request, "Content-Type");
+    const std::string &body = connection.request.get_body();
+    if (body.empty())
+    {
+        error_mesg.generate_error_response(400);
+        return;
+    }
+    std::string filename = generate_filename(content_type);
+    std::string complet_fullpath = fullpath + "/" + filename;
+    std::ofstream ofs(complet_fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
+    if (!ofs.is_open() || !ofs.good())
+    {
+        error_mesg.generate_error_response(500);
+        return;
+    }
+    ofs.write(body.c_str(), body.size());
+    ofs.close();
+    send_created_html(connection.client_fd, correct_path);
 }
 
 void HttpHandler::handle_delete()
@@ -518,7 +514,6 @@ void HttpHandler::handle_delete()
           error_mesg.generate_error_response(403);
           return ;
      }
-
      std::string    parent_dir = get_parent_dir(fullpath);
      if (!is_writable_dir(parent_dir))
      {

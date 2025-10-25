@@ -99,7 +99,7 @@ void EventLoop::accept_client(int listen_fd)
 void EventLoop::handle_client(int client_fd)
 {
     char buffer[4096];
-    int bytes;
+    int  bytes;
     std::map<int, Connection>::iterator it = connections.find(client_fd);
     if (it == connections.end())
         return; 
@@ -119,27 +119,17 @@ void EventLoop::handle_client(int client_fd)
             return;
         }
         else
-        {
-            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-            close(client_fd);
-            connections.erase(it);
-            std::cout << "recv() failed on client " << client_fd << ", closing connection" << std::endl;
-            return; 
-        }
+            break;
         if (bytes < (int)sizeof(buffer))
             break;
     }
     RequestResult result = parse_http_request(connection.buffer, connection.request);
-   
     if (result == SUCCESS)
     {
         HttpHandler handlereq(connection);
         CgiHandler cgi(connection, connection.request);
         cgi.environment.SetEnv();
-
-        
         std::cout << "\n******************* ENV *********************\n";
-
         cgi.environment.PrintEnv();
         std::cout << "########### END ############" << std::endl;
         
@@ -151,14 +141,14 @@ void EventLoop::handle_client(int client_fd)
     }
     else if (result == INCOMPLETE)
     {
-        std::cout << "Incomplete request from client " << client_fd << std::endl;
+        std::cout << "Incomplete request from client " << client_fd << " (waiting for more data)" << std::endl;
         return;
     }
     else 
     {
         std::cout << "Bad request from client " << client_fd << std::endl;
         std::string response =
-            "HTTP/1.1 400 Bad Request\r\n"
+            "HTTP/1.1 4500 Bad Request\r\n"
             "Content-Length: 0\r\n"
             "\r\n";
         send(client_fd, response.c_str(), response.size(), 0);

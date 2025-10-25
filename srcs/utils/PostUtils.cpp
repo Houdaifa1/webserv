@@ -10,7 +10,6 @@ bool dir_exists(const std::string &path)
     return false;
 }
 
-
 bool is_writable_dir(const std::string &path)
 {
     return access(path.c_str(), W_OK) == 0;
@@ -20,10 +19,10 @@ std::string get_parent_dir(const std::string &path)
 {
     size_t slash = path.find_last_of('/');
     if (slash == std::string::npos || slash == 0)
-        return "";
-    return path.substr(0, slash);
+        return path;
+    return path;
+    // return path.substr(0, slash);
 }
-
 
 std::string get_header_value(const HttpRequest &req, const std::string &name)
 {
@@ -82,7 +81,6 @@ bool is_writable_file(const std::string &path)
     return false;
 }
 
-
 bool is_cgi_request(const Location &loc, const std::string &fullpath)
 {
     std::string cgi_path;
@@ -103,4 +101,16 @@ bool is_cgi_request(const Location &loc, const std::string &fullpath)
     if (ext == ".php" || ext == ".py" || ext == ".sh")
         return true;
     return false;
+}
+
+std::string generate_filename(const std::string &content_type)
+{
+    if (content_type.find("text/html") != std::string::npos)
+        return "test_" + std::to_string(std::time(NULL)) + ".html";
+    else if (content_type.find("application/json") != std::string::npos)
+        return "test_" + std::to_string(std::time(NULL)) + ".json";
+    else if (content_type.find("application/octet-stream") != std::string::npos)
+        return "upload_" + std::to_string(std::time(NULL)) + ".bin";
+    else
+        return "test_" + std::to_string(std::time(NULL)) + ".txt";
 }

@@ -115,7 +115,7 @@ RequestResult parse_body(std::string &request, size_t &index, HttpRequest &req)
     return SUCCESS;
 }
 
-RequestResult parse_http_request(std::string request, HttpRequest &req)
+RequestResult parse_http_request(std::string& request, HttpRequest &req)
 {
     size_t index = request.find("\r\n") ;
     if (index == std::string::npos)
@@ -136,7 +136,7 @@ RequestResult parse_http_request(std::string request, HttpRequest &req)
     // {
     //     std::cout << "key : " << it->first << "   value : " << it->second << "\n";
     // }
-    std::cout << "youuu" << req.get_host_domain() << " : "<< req.get_host_port() << "\n\n";
+    // std::cout << "youuu" << req.get_host_domain() << " : "<< req.get_host_port() << "\n\n";
 
     return(parse_body(request, index, req));
 

@@ -28,7 +28,7 @@ void            parse_root(Directive &directive, std::string &path);
 void            parse_autoindex(Directive &directive, std::string &path);
 int             startserver(const Config &config);
 std::string     intTo_String(int n);
-RequestResult   parse_http_request(std::string request, HttpRequest &req);
+RequestResult   parse_http_request(std::string& request, HttpRequest &req);
 void            ft_remove_whitespaces(std::string& s);
 void            parse_error_pages(Server &server, std::string &path);
 void            normalize_path(std::string &path);

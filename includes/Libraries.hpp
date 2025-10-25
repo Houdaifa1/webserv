@@ -3,7 +3,6 @@
 
 # include <iostream>
 # include <vector>
-# include <fstream>
 # include <string>
 # include <cstring>
 # include <map>
@@ -20,6 +19,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
-
+#include <ctime>
+#include <iomanip>
 
 # endif 

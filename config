@@ -22,7 +22,8 @@ server {
     location /api/ {
         allowed_methods  POST GET DELETE;
         autoindex on;
-        root /home/momazouz/va/ww/html ;
+        root /home/nirou/va/ww/html ;
+        cgi_path /home/nirou/va/ww/html;
         
     }
 

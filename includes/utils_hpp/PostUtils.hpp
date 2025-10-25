@@ -16,4 +16,6 @@ bool file_exists(const std::string &path);
 bool is_writable_file(const std::string &path);
 bool is_cgi_request(const Location &loc, const std::string &fullpath);
 
+
+std::string generate_filename(const std::string &content_type);
 #endif
