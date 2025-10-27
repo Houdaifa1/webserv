@@ -1,8 +1,8 @@
 #ifndef ENVIRONMENT_HPP
 #define ENVIRONMENT_HPP
 
-#include "../../includes/Libraries.hpp"
-#include "../../includes/webserv.hpp"
+#include "../Libraries.hpp"
+#include "../webserv.hpp"
 
 class Environment {
     private:

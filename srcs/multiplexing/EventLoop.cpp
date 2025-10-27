@@ -132,7 +132,7 @@ void EventLoop::handle_client(int client_fd)
         std::cout << "\n******************* ENV *********************\n";
         cgi.environment.PrintEnv();
         std::cout << "########### END ############" << std::endl;
-        
+        cgi.SetCommands();
         connection.buffer.clear();
         close(client_fd);
         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
