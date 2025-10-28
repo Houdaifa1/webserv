@@ -1,6 +1,6 @@
 #include "../../includes/cgi/cgihandler.hpp"
 
-CgiHandler::CgiHandler(Connection &conn, HttpRequest &req) : name("cgi_path"), conn(conn), req(req), direct(conn.location.directives), environment(conn, req) {}
+CgiHandler::CgiHandler(Connection &conn, HttpRequest &req) : name("cgi_path"), conn(conn), req(req), direct(conn.location.directives), fullpath(conn.location.root + req.get_correct_path()), environment(conn, req) {}
 
 std::vector<std::string> CgiHandler::GetEnv() {
     std::vector<std::string> envv = environment.GetEnv();
@@ -27,4 +27,22 @@ void CgiHandler::SetCommands(){
     }
     (void)conn;
     (void)req;
+}
+
+bool CgiHandler::CheckFile(const std::string file){
+    struct stat buffer;
+
+    if (stat(file.c_str(), &buffer) == 0){
+        if (S_ISDIR(buffer.st_mode))
+            return (false);
+        return (true);
+    }
+    return (false);
+}
+
+int CgiHandler::ExecuteScript() {
+    if (!CheckFile(fullpath)){
+        return (1);
+    }
+    return (0);
 }

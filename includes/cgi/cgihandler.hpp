@@ -12,11 +12,14 @@ class CgiHandler {
         Connection &conn;
         HttpRequest &req;
         std::vector<Directive> direct;
+        const std::string fullpath;
     public:
         Environment environment;
         CgiHandler(Connection &conn, HttpRequest &req);
         std::vector<std::string> GetEnv();
         void SetCommands();
+        bool CheckFile(const std::string file);
+        int ExecuteScript();
 };
 
 #endif
