@@ -25,24 +25,34 @@ void CgiHandler::SetCommands(){
                 std::cout << "* " << it->args[j] << "\n";
         }
     }
+    size_t dot = fullpath.find_last_of('.');
+    std::string ext = fullpath.substr(dot);
+    std::cout << ext << " **********\n";
     (void)conn;
     (void)req;
 }
 
-bool CgiHandler::CheckFile(const std::string file){
-    struct stat buffer;
+bool CgiHandler::CheckFile(){
+    ErrorHandler error_mesg(conn.location, conn);
 
-    if (stat(file.c_str(), &buffer) == 0){
-        if (S_ISDIR(buffer.st_mode))
+    const std::string file = fullpath;
+    if (access(conn.location.root.c_str(), R_OK | X_OK) == -1)
+    {
+        error_mesg.generate_error_response(403);
+        return (false);
+    }
+    if (access(file.c_str(), F_OK) == 0){
+        if (access(file.c_str(), X_OK | R_OK))
+        {
+            error_mesg.generate_error_response(403);
             return (false);
+        }
         return (true);
     }
+    error_mesg.generate_error_response(404);
     return (false);
 }
 
 int CgiHandler::ExecuteScript() {
-    if (!CheckFile(fullpath)){
-        return (1);
-    }
-    return (0);
+    return (1);
 }

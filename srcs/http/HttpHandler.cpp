@@ -1,3 +1,4 @@
+#include "../../includes/cgi/cgihandler.hpp"
 #include "../../includes/webserv.hpp"
 
 HttpHandler::HttpHandler(Connection &connection) : connection(connection)
@@ -11,6 +12,14 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
      std::string    req_path = connection.request.get_correct_path();
      if (is_cgi_request(connection.location, req_path))
      {
+          CgiHandler cgi(connection, connection.request);
+          if (cgi.CheckFile()){
+              cgi.environment.SetEnv();
+              std::cout << "\n******************* ENV *********************\n";
+              cgi.environment.PrintEnv();
+              std::cout << "########### END ############" << std::endl;
+              cgi.SetCommands();
+          }
           std::cout << "CGI request detected for: " << req_path << std::endl;
           return ;
      }
@@ -461,7 +470,7 @@ void HttpHandler::handle_post()
     std::string server_root = resolve_upload_path(connection.location);
     std::string fullpath = make_fullpath(server_root, correct_path);
     if (!dir_exists(fullpath))
-    {
+    { 
         error_mesg.generate_error_response(404);
         return;
     }

@@ -8,6 +8,7 @@ class CgiHandler {
     private:
         const std::string name;
         std::string command;
+        std::string ext;
         std::vector<std::string> args;
         Connection &conn;
         HttpRequest &req;
@@ -18,7 +19,7 @@ class CgiHandler {
         CgiHandler(Connection &conn, HttpRequest &req);
         std::vector<std::string> GetEnv();
         void SetCommands();
-        bool CheckFile(const std::string file);
+        bool CheckFile();
         int ExecuteScript();
 };
 

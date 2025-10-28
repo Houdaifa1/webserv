@@ -12,6 +12,7 @@ class Location
         std::string                         autoindex;
         std::map<std::string, std::string>  errors;
         std::vector<Directive>              directives;
+        std::string                         ext_cgi;
         TrackPos                            position;    
 };
 

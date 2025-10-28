@@ -98,7 +98,7 @@ bool is_cgi_request(const Location &loc, const std::string &fullpath)
     if (dot == std::string::npos)
         return false;
     std::string ext = fullpath.substr(dot);
-    if (ext == ".php" || ext == ".py" || ext == ".sh")
+    if (ext == ".py" || ext == ".sh")
         return true;
     return false;
 }
