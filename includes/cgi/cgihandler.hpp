@@ -8,7 +8,6 @@ class CgiHandler {
     private:
         const std::string name;
         std::string command;
-        std::string ext;
         std::vector<std::string> args;
         Connection &conn;
         HttpRequest &req;

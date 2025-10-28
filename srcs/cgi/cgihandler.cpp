@@ -17,18 +17,26 @@ std::vector<std::string> CgiHandler::GetEnv() {
 }
 
 void CgiHandler::SetCommands(){
+    ErrorHandler error_mesg(conn.location, conn);
     std::vector<Directive>::iterator it;
+
+    size_t dot = fullpath.find_last_of('.');
+    std::string ext = fullpath.substr(dot);
 
     for(it = direct.begin(); it != direct.end(); ++it){
         if (it->name == this->name){
-            for (unsigned long j = 0; j < it->args.size(); j++)
-                std::cout << "* " << it->args[j] << "\n";
+                if (it->args.size() > 2){
+                    error_mesg.generate_error_response(403);
+                    return;
+                }
+                if (ext == ".py")
+                    command = it->args[0];
+                else if(ext == ".sh")
+                    command = it->args[1];
+                break;
         }
     }
-    size_t dot = fullpath.find_last_of('.');
-    std::string ext = fullpath.substr(dot);
-    std::cout << ext << " **********\n";
-    (void)conn;
+    std::cout << "This IS Command: " << command << std::endl;
     (void)req;
 }
 
