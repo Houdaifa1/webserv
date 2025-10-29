@@ -8,7 +8,7 @@ class CgiHandler {
     private:
         const std::string name;
         std::string command;
-        std::vector<std::string> args;
+        const char *args[2];
         Connection &conn;
         HttpRequest &req;
         std::vector<Directive> direct;

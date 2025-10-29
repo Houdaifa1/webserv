@@ -33,17 +33,18 @@ void CgiHandler::SetCommands(){
                     command = it->args[0];
                 else if(ext == ".sh")
                     command = it->args[1];
+                this->args[0] = command.c_str();
+                this->args[1] = fullpath.c_str();
                 break;
         }
     }
-    std::cout << "This IS Command: " << command << std::endl;
-    (void)req;
 }
 
 bool CgiHandler::CheckFile(){
     ErrorHandler error_mesg(conn.location, conn);
 
     const std::string file = fullpath;
+    std::cout << "THIS IS FILE: " << file << "\n"; 
     if (access(conn.location.root.c_str(), R_OK | X_OK) == -1)
     {
         error_mesg.generate_error_response(403);
