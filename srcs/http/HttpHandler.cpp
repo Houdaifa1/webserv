@@ -19,6 +19,7 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
               cgi.environment.PrintEnv();
               std::cout << "########### END ############" << std::endl;
               cgi.SetCommands();
+              cgi.ExecuteScript();
           }
           std::cout << "CGI request detected for: " << req_path << std::endl;
           return ;
