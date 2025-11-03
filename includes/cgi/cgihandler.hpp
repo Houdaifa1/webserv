@@ -7,19 +7,22 @@
 class CgiHandler {
     private:
         const std::string name;
-        std::string command; // change to char *
-        const char *args[3]; // lose the const
+        char *cmnd;
+        char *args[3]; // lose the const
         Connection &conn;
         HttpRequest &req;
         std::vector<Directive> direct;
         const std::string fullpath;
+        bool cmd_set;
+        // bool is_path;
         int fd[2];
+        int GetCommands(std::string ext, std::vector<std::string> &command);
     public:
         Environment environment;
         CgiHandler(Connection &conn, HttpRequest &req);
         int GetSize();
         void GetEnv(char **env);
-        void SetCommands();
+        int SetCommands();
         bool CheckFile();
         int ExecuteScript();
 };

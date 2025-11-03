@@ -1,23 +1,68 @@
 #include "../../includes/cgi/cgihandler.hpp"
 #include <sys/wait.h>
-CgiHandler::CgiHandler(Connection &conn, HttpRequest &req) : name("cgi_path"), conn(conn), req(req), direct(conn.location.directives), fullpath(conn.location.root + req.get_correct_path()), environment(conn, req) {}
+
+CgiHandler::CgiHandler(Connection &conn, HttpRequest &req) : name("cgi_path"),
+    conn(conn), req(req), direct(conn.location.directives),
+    fullpath(conn.location.root + req.get_correct_path()),
+    cmd_set(false), environment(conn, req) {}
 
 int CgiHandler::GetSize(){
     return (environment.GetEnv().size());
 }
 
+char* cpp_strdup(const char* s) {
+    if (s == NULL) {
+        return NULL;
+    }
+    size_t len = std::strlen(s) + 1;
+    char* new_string = new char[len];
+    std::strcpy(new_string, s);
+    return new_string;
+}
+
 void CgiHandler::GetEnv(char **env) {
     std::vector<std::string> envv = environment.GetEnv();
     int size = envv.size();
-    for (int i = 0; i < size; i++){
-        env[i] = new char[envv[i].size() + 1]; 
-        std::strncpy(env[i], envv[i].c_str(), envv[i].size());
-        env[i][envv[i].size()] = '\0';
-    }
+    for (int i = 0; i < size; i++)
+        env[i] = cpp_strdup(envv[i].c_str());
     env[size] = NULL;
 }
 
-void CgiHandler::SetCommands(){
+int CgiHandler::GetCommands(std::string ext, std::vector<std::string> &commands){
+    std::vector<std::string>::iterator it;
+    std::string type, temp, temp2;
+    size_t tmp;
+
+    for(it = commands.begin(); it != commands.end(); ++it)
+    {
+        if (ext == ".py")
+            type = "python3";
+        else if (ext == ".sh")
+            type = "bash";
+        tmp = (*it).find(type);
+        if (tmp != std::string::npos && std::strcmp(it->c_str() + tmp, type.c_str()) == 0)
+        {
+            std::cout << "I'M HERE:   1\n";
+            if(*it == type){
+                temp = "/usr/bin/" + type;
+                cmnd = cpp_strdup(temp.c_str());
+                return (1);
+            }
+            tmp = it->find_last_of("/");
+            if (tmp != std::string::npos && access(it->c_str(), R_OK || X_OK) == 0){
+                    temp = it->c_str() + tmp;
+                    temp2 = "/" + type;
+                    if(temp == temp2){
+                        cmnd = cpp_strdup(it->c_str());
+                        return (1);
+                    }
+            }
+        }
+    }
+    return (0);
+}
+
+int CgiHandler::SetCommands(){
     ErrorHandler error_mesg(conn.location, conn);
     std::vector<Directive>::iterator it;
 
@@ -27,27 +72,27 @@ void CgiHandler::SetCommands(){
     args[2] = NULL;
     for(it = direct.begin(); it != direct.end(); ++it){
         if (it->name == this->name){
-                if (it->args.size() > 2){
-                    error_mesg.generate_error_response(403);
-                    return;
+                if ((ext == ".py" && GetCommands(ext, it->args))
+                    || (ext == ".sh" && GetCommands(ext, it->args))){
+                    cmd_set = true;
+                    std::cout << "IM CMND: " << cmnd << std::endl;
+                    this->args[0] = cpp_strdup(cmnd); // copy without c_str() to lose const
+                    this->args[1] = cpp_strdup(fullpath.c_str()); // copy without c_str() to lose const
+                    this->args[2] = NULL;
+                    break;
                 }
-                if (ext == ".py")
-                    command = it->args[0]; // copy without c_str() to lose const
-                else if(ext == ".sh")
-                    command = it->args[1]; // copy without c_str() to lose const
-                this->args[0] = command.c_str(); // copy without c_str() to lose const
-                this->args[1] = fullpath.c_str(); // copy without c_str() to lose const
-                break;
+                else 
+                    return (0);
         }
     }
     (void)req;
+    return (1);
 }
 
 bool CgiHandler::CheckFile(){
     ErrorHandler error_mesg(conn.location, conn);
 
     const std::string file = fullpath;
-    std::cout << "THIS IS FILE: " << file << "\n"; 
     if (access(conn.location.root.c_str(), R_OK | X_OK) == -1)
     {
         error_mesg.generate_error_response(403);
@@ -66,75 +111,73 @@ bool CgiHandler::CheckFile(){
 }
 
 int CgiHandler::ExecuteScript() {
-    char buffer[50];
-    char **env = new char*[GetSize()];
+    char tmp[501];
+    ErrorHandler error_msg(conn.location, conn);
+    std::string buffer;
+    char **env = new char*[GetSize() + 1];
 
     GetEnv(env);
+    int parent_pid = fork();
 
-    if (pipe(fd) == -1)
-        return (1);
+    if (parent_pid == 0){
+        int status;
+        if (pipe(fd) == -1)
+            return (1);
 
-    pid_t pid = fork();
+        pid_t pid = fork();
 
-    if (pid == -1){
-        close(fd[0]);
-        close(fd[1]);
-        return (1);
+        if (pid == -1){
+            close(fd[0]);
+            close(fd[1]);
+            return (1);
+        }
+        if (pid == 0){
+            close(fd[0]);
+            dup2(fd[1], STDOUT_FILENO);
+            execve(cmnd, args, env);
+            error_msg.generate_error_response(500);
+            close(fd[1]);
+            std::exit(1);
+        }
+        else {
+            waitpid(pid, &status, 0);
+            if (WIFEXITED(status))
+            {
+                close(fd[1]);
+                if (WEXITSTATUS(status) == 0){
+                int bytes = 1;
+                while (bytes != 0){
+                    bytes = read(fd[0], tmp, 500);
+                    tmp[bytes] = '\0';
+                    buffer += tmp;
+                }
+                std::stringstream header;
+                header << "HTTP/1.0 200 Ok\r\n"
+                    << "Content-Type: text/html\r\n"
+                    << "Content-Length: " << buffer.size() << "\r\n"
+                    << "Connection: close\r\n\r\n";
+                std::string response = header.str() + buffer;
+                send(conn.client_fd, response.c_str(), response.length(), 0);
+                }
+                close(fd[0]);
+            }
+        }
+        delete[] cmnd;
+        for (int i = 0; args[i]; i++){
+            delete[] args[i];
+        }
+        for (int i = 0; i < GetSize(); ++i) {
+            delete[] env[i];
+        }
+        exit(0);
     }
-
-    if (pid == 0){
-        close(fd[0]);
-        dup2(fd[1], STDOUT_FILENO);
-        write(1, "1234567 ", 8);
-        std::cout << "* " << fd[1] << " *" << "child finished";
-        close(fd[1]);
-
-        std::exit(1);
+    delete[] cmnd;
+    for (int i = 0; args[i]; i++){
+        delete[] args[i];
     }
-    else {
-        waitpid(pid, NULL, 0);
-        close(fd[1]);
-        int bytes = read(fd[0], buffer, 50);
-        buffer[bytes] = '\0';
-        std::cout << "This is buffer: " << buffer << std::endl;
-        close(fd[0]);
+    for (int i = 0; i < GetSize(); ++i) {
+        delete[] env[i];
     }
-    // for (int i = 0; i < GetSize(); ++i) {
-    //     delete[] env[i];
-    //     env[i] = NULL;
-    // }
-    // delete[] env;
+    delete[] env;
     return (0);
-    // char buffer[50];
-    // if (pipe(fd) == -1)
-    //     return (1);
-
-    // pid_t pid = fork();
-
-    // if (pid == -1){
-    //     close(fd[0]);
-    //     close(fd[1]);
-    //     return (1);
-    // }
-
-    // if (pid == 0){
-    //     close(fd[0]);
-    //     int tmp = dup(STDOUT_FILENO);
-    //     dup2(tmp, fd[1]);
-    //     write(1, "1234567\n", 8);
-    //     std::cout << "* " << fd[1] << " *" << "child finished\n";
-    //     dup2(fd[1], STDOUT_FILENO);
-    //     close(fd[1]);
-    //     close(tmp);
-    //     std::exit(0);
-    // }
-    // else {
-    //     waitpid(pid, NULL, 0);
-    //     close(fd[1]);
-    //     int bytes = read(fd[0], buffer, 8);
-    //     buffer[bytes] = '\0';
-    //     std::cout << "This is buffer: " << buffer << std::endl;
-    //     close(fd[0]);
-    // }
-    // return (0);
 }

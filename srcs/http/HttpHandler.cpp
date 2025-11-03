@@ -3,28 +3,34 @@
 
 HttpHandler::HttpHandler(Connection &connection) : connection(connection)
 {
+     ErrorHandler error_mesg(connection.location, connection);
      std::cout << connection.client_fd
                << " | Client: " << connection.client_ip << ":" << connection.client_port
                << " | Server: " << connection.server_ip << ":" << connection.server_port << std::endl;
-
      correct_path();
      check_final_path();
+     std::string method = connection.request.get_httpmethod();
      std::string    req_path = connection.request.get_correct_path();
      if (is_cgi_request(connection.location, req_path))
      {
+          if (!is_method_allowed(connection.location, method))
+               return;
+          if (method != "GET" && method != "POST"){
+               error_mesg.generate_error_response(405);
+               return;
+          }
           CgiHandler cgi(connection, connection.request);
           if (cgi.CheckFile()){
               cgi.environment.SetEnv();
-              std::cout << "\n******************* ENV *********************\n";
-              cgi.environment.PrintEnv();
-              std::cout << "########### END ############" << std::endl;
-              cgi.SetCommands();
+              if (!cgi.SetCommands()){
+                    error_mesg.generate_error_response(500);
+                    return;
+               }
               cgi.ExecuteScript();
           }
           std::cout << "CGI request detected for: " << req_path << std::endl;
           return ;
      }
-     std::string method = connection.request.get_httpmethod();
      if (method == "GET")
           handle_get();
      else if (method == "POST")
