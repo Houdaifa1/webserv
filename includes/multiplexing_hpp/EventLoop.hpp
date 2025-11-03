@@ -25,6 +25,8 @@ class EventLoop
         void accept_client(int listen_fd);
         void handle_client(int client_fd);
         void create_connection(int client_fd);
+        void handle_write(int client_fd);
+        void cleanup_connection(int fd);
 };
 
 #endif

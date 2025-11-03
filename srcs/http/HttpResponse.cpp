@@ -77,17 +77,22 @@ void HttpResponse::sendresponse()
         send(connection.client_fd, body_string.c_str(), body_string.size(), 0);
         return;
     }
-    FILE *file = fopen(body_file_path.c_str(), "rb");
-    if (!file) {
-        return;
-    }
 
-    char buffer[8192];
-    size_t bytesRead;
-    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) {
-        send(connection.client_fd, buffer, bytesRead, 0);
-    }
-    fclose(file);
+    struct stat st;
+    if (stat(body_file_path.c_str(), &st) == 0)
+        connection.out_file_size = st.st_size;
+    else
+        connection.out_file_size = 0;
+    
+    connection.out_file = fopen(body_file_path.c_str(), "rb");
+    if (connection.out_file == NULL)
+        return;
+
+    connection.out_chunk.clear();
+    connection.out_chunk_size = 0;
+    connection.out_offset = 0;
+    connection.out_file_pos = 0;
+    connection.sending_file = true;
 }
 
 

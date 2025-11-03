@@ -48,6 +48,26 @@ void EventLoop::set_nonblocking(int fd)
     fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
+void EventLoop::cleanup_connection(int fd)
+{
+    std::map<int, Connection>::iterator it = connections.find(fd);
+    if (it == connections.end())
+        return;
+
+    Connection& conn = it->second;
+    if (conn.out_file)
+    {
+        fclose(conn.out_file);
+        conn.out_file = NULL;
+    }
+    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+    close(fd);
+    connections.erase(it);
+
+    std::cout << "[debug] cleaned up connection fd=" << fd << std::endl;
+}
+
+
 void EventLoop::create_connection(int client_fd)
 {
     connections.erase(client_fd);
@@ -128,9 +148,23 @@ void EventLoop::handle_client(int client_fd)
     {
         HttpHandler handlereq(connection);
         connection.buffer.clear();
-        close(client_fd);
-        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-        connections.erase(it);
+        if (connection.sending_file)
+        {
+            struct epoll_event ev;
+            ev.events = EPOLLIN | EPOLLOUT;
+            ev.data.fd = client_fd;
+            if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client_fd, &ev) < 0)
+            {
+                if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0)
+                {
+                    cleanup_connection(client_fd);
+                    return;
+                }
+            }
+            return ;
+        }
+        cleanup_connection(client_fd);
+        return;
         // todo after method: add timeouts
     }
     else if (result == INCOMPLETE)
@@ -140,9 +174,8 @@ void EventLoop::handle_client(int client_fd)
     }
     else 
     {
-        std::cout << "Bad request from client " << client_fd << std::endl;
         std::string response =
-            "HTTP/1.1 4500 Bad Request\r\n"
+            "HTTP/1.1 400 Bad Request\r\n"
             "Content-Length: 0\r\n"
             "\r\n";
         send(client_fd, response.c_str(), response.size(), 0);
@@ -153,8 +186,90 @@ void EventLoop::handle_client(int client_fd)
     }
     
 }
+
+void EventLoop::handle_write(int client_fd)
+{
+    std::map<int, Connection>::iterator it = connections.find(client_fd);
+    if (it == connections.end()) return;
+
+    Connection &conn = it->second;
+
+    if (!conn.sending_file || conn.out_file == NULL)
+        return;
+
+    const size_t CHUNK_SIZE = 8192;
+    char tmp[CHUNK_SIZE];
+    if (conn.out_chunk_size > conn.out_offset)
+    {
+        const char *p = conn.out_chunk.c_str() + conn.out_offset;
+        size_t remaining = conn.out_chunk_size - conn.out_offset;
+        ssize_t s = send(client_fd, p, remaining, 0);
+
+        if (s > 0)
+        {
+            conn.out_offset += (size_t)s;
+            conn.out_file_pos += (size_t)s;
+
+            if (conn.out_offset < conn.out_chunk_size)
+            {
+                rearm_epollout(epoll_fd, client_fd);
+                return;
+            }
+            conn.out_chunk.clear();
+            conn.out_chunk_size = 0;
+            conn.out_offset = 0;
+        }
+        else
+        {
+            rearm_epollout(epoll_fd, client_fd);
+            return;
+        }
+    }
+
+    size_t nread = fread(tmp, 1, CHUNK_SIZE, conn.out_file);
+    if (nread == 0)
+    {
+        if (feof(conn.out_file))
+            std::cout << "eof : finished file";
+        else
+            std::cout << "fread error";
+        cleanup_connection(client_fd);
+        return;
+    }
+    ssize_t sent = send(client_fd, tmp, nread, 0);
+    if (sent > 0)
+    {
+        conn.out_file_pos += (size_t)sent;
+
+        if ((size_t)sent < nread)
+        {
+            conn.out_chunk.assign(tmp + sent, nread - sent);
+            conn.out_chunk_size = nread - sent;
+            conn.out_offset = 0;
+            rearm_epollout(epoll_fd, client_fd);
+            return;
+        }
+        if (conn.out_file_pos >= conn.out_file_size)
+        {
+            cleanup_connection(client_fd);
+            return;
+        }
+        rearm_epollout(epoll_fd, client_fd);
+        return;
+    }
+    else
+    {
+        conn.out_chunk.assign(tmp, nread);
+        conn.out_chunk_size = nread;
+        conn.out_offset = 0;
+        rearm_epollout(epoll_fd, client_fd);
+        return;
+    }
+}
+
 void EventLoop::run()
 {
+    signal(SIGPIPE, SIG_IGN);
     int fd;
     int i;
     const int MAX_EVENTS = 64;
@@ -173,13 +288,19 @@ void EventLoop::run()
         for (i = 0; i < n; i++)
         {
             fd = events[i].data.fd;
+            uint32_t ev = events[i].events;
             if (listening_fds.count(fd))
             {
                 accept_client(fd);
+                continue;
             }
-            else
+            if (ev & EPOLLIN)
             {
                 handle_client(fd);
+            }
+            if (ev & EPOLLOUT)
+            {
+                handle_write(fd);
             }
         }
     }

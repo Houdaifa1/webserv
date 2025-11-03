@@ -34,14 +34,15 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(HELP_FUNCS_DIR)/into_string.cpp    \
               $(HTTP_SRC_DIR)/parse_http_request.cpp   \
               $(HELP_FUNCS_DIR)/remove_white_spaces.cpp \
-              $(MULTIPLEXING)/EventLoop.cpp  \
-              $(MULTIPLEXING)/Connection.cpp  \
-              $(UTILS_SRC)/ConfigUtils.cpp     \
-              $(UTILS_SRC)/PostUtils.cpp        \
-              $(UTILS_SRC)/ResponseUtils.cpp     \
-              $(UTILS_SRC)/Signals.cpp       \
-              $(CGI_SRC)/cgihandler.cpp       \
-              $(CGI_SRC)/Environment.cpp       \
+              $(MULTIPLEXING)/EventLoop.cpp       \
+              $(MULTIPLEXING)/EventLoop_utils.cpp  \
+              $(MULTIPLEXING)/Connection.cpp        \
+              $(UTILS_SRC)/ConfigUtils.cpp           \
+              $(UTILS_SRC)/PostUtils.cpp              \
+              $(UTILS_SRC)/ResponseUtils.cpp           \
+              $(UTILS_SRC)/Signals.cpp                  \
+              $(CGI_SRC)/cgihandler.cpp                  \
+              $(CGI_SRC)/Environment.cpp                  \
 
               
 all: $(NAME)

@@ -8,7 +8,7 @@ class HttpResponse
 
     private:
 
-        Connection  connection;
+        Connection  &connection;
         int         status_code;
         std::string content_type;
         size_t      content_length;

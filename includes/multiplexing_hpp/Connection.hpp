@@ -28,6 +28,14 @@ class Connection
         // HttpResponse response;
         ConnState       state;
 
+        FILE *out_file;
+        std::string out_chunk;
+        size_t out_chunk_size;
+        size_t  out_offset;
+        bool    sending_file;
+        off_t   out_file_size;
+        off_t   out_file_pos;
+
         Connection(int client_fd, const Server &server,
                const std::string &client_ip, int client_port,
                const std::string &server_ip, int server_port);
