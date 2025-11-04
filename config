@@ -141,7 +141,7 @@ server {
     location /webserv {
         allowed_methods GET POST;
         root /home/hdrahm/Desktop/webserv/////;
-        index index.html;
+       
         autoindex on;
        
     }

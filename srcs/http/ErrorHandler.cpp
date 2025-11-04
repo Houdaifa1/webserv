@@ -60,8 +60,7 @@ void ErrorHandler::generate_error_response(int error_code)
         if (stat(path.c_str(), &check) == 0)
         {
             if (S_ISREG(check.st_mode) && (access(path.c_str(), R_OK) == 0))
-            {
-                
+            {   
                 HttpResponse resp(connection, error_code, type, check.st_size , path);
                 resp.sendresponse();
                 return ;

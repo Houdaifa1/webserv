@@ -7,7 +7,8 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
      std::cout << connection.client_fd
                << " | Client: " << connection.client_ip << ":" << connection.client_port
                << " | Server: " << connection.server_ip << ":" << connection.server_port << std::endl;
-     correct_path();
+     if (!correct_path())
+          return;
      check_final_path();
      std::string method = connection.request.get_httpmethod();
      std::string    req_path = connection.request.get_correct_path();
@@ -232,7 +233,7 @@ bool check_allowed_method(const std::string& method, const Location& location)
     return false;
 }
 
-void HttpHandler::correct_path()
+bool HttpHandler::correct_path()
 {
      ErrorHandler error_mesg(connection.location, connection);
 
@@ -246,18 +247,27 @@ void HttpHandler::correct_path()
      if (index != std::string::npos)
           query = raw_path.substr(index + 1);
      connection.request.set_query(query);
-
      raw_path = raw_path.substr(0, index);
      if (!decode_path(raw_path))
+     {
           error_mesg.generate_error_response(404);
+          return false;
+     }
      normalize_path(raw_path);
      if (!find_location(connection.server, raw_path, connection.location))
+     {
           error_mesg.generate_error_response(404);
+          return false;
+     }
      if (!check_allowed_method(connection.request.get_httpmethod(), connection.location))
+     {
           error_mesg.generate_error_response(405);
+          return false;
+     }
      std::string loc_path = connection.location.path;
      normalize_path(loc_path);
      connection.request.set_correct_path(raw_path.substr(loc_path.size()));
+     return true;
 }
 
 void HttpHandler::check_final_path()
@@ -268,7 +278,6 @@ void HttpHandler::check_final_path()
      std::string final_path = root + "/" + request_path;
      normalize_path(final_path);
      connection.request_full_path = final_path;
-     // std::cout << "\n\ncorrect path : " << final_path << "\n\n";
 }
 
 PathCheck HttpHandler::check_path_exist(std::string path)
@@ -359,17 +368,48 @@ std::string HttpHandler::get_index_file()
 
 std::string HttpHandler::get_html_entries(std::vector<std::string> &entries)
 {
-     std::string html = "<html><head><title>Index of " + connection.request_full_path + "</title></head><body>";
-     html += "<h1>Index of " + connection.request_full_path + "</h1><ul>";
+    std::string html;
 
-     for (size_t i = 0; i < entries.size(); ++i)
-     {
-          std::string entry = entries[i];
-          html += "<li><a href=\"" + entry + "\">" + entry + "</a></li>";
-     }
-     html += "</ul></body></html>";
-     return (html);
+    html += "<!DOCTYPE html><html lang=\"en\"><head>";
+    html += "<meta charset=\"UTF-8\">";
+    html += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
+    html += "<title>Index of " + connection.request_full_path + "</title>";
+    html += "<style>";
+    html += "body { font-family: 'Segoe UI', sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 40px; }";
+    html += "h1 { color: #58a6ff; border-bottom: 2px solid #30363d; padding-bottom: 10px; }";
+    html += "ul { list-style: none; padding: 0; margin-top: 20px; }";
+    html += "li { margin: 10px 0; }";
+    html += "a { text-decoration: none; color: #58a6ff; font-size: 18px; display: inline-block; padding: 8px 14px; border-radius: 8px; background: #161b22; transition: 0.25s; }";
+    html += "a:hover { background: #238636; color: white; transform: scale(1.05); }";
+    html += ".file::before { content: '\\1F4C4 '; }";   
+    html += ".dir::before { content: '\\1F4C1 '; }";   
+    html += ".container { max-width: 700px; margin: auto; }";
+    html += ".footer { margin-top: 40px; font-size: 14px; color: #8b949e; text-align: center; border-top: 1px solid #30363d; padding-top: 10px; }";
+    html += "</style>";
+
+    html += "</head><body><div class=\"container\">";
+    html += "<h1>📁 Index of " + connection.request_full_path + "</h1>";
+    html += "<ul>";
+
+    for (size_t i = 0; i < entries.size(); ++i)
+    {
+        std::string entry = entries[i];
+        std::string full_link = connection.request_full_path;
+        if (full_link.length() > 1 && full_link[full_link.length() - 1] != '/')
+            full_link += "/";
+        full_link += entry;
+        std::string css_class = (entry.find('.') == std::string::npos) ? "dir" : "file";
+
+        html += "<li><a class=\"" + css_class + "\" href=\"" + full_link + "\">" + entry + "</a></li>";
+    }
+
+    html += "</ul>";
+    html += "<div class=\"footer\">Webserv Directory Listing — Built with 💙</div>";
+    html += "</div></body></html>";
+
+    return html;
 }
+
 
 void HttpHandler::handle_get()
 {

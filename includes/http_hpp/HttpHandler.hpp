@@ -24,7 +24,7 @@ class HttpHandler
 
         HttpHandler(Connection &connection);
 
-        void correct_path();
+        bool correct_path();
         void handle_get();
         bool decode_path(std::string &path);
         void handle_post();
