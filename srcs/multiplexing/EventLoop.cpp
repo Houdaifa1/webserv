@@ -14,7 +14,7 @@ EventLoop::EventLoop(ServerCore &srv) : server(srv)
     std::cout << "epoll_fd = " << epoll_fd << std::endl;
     if (epoll_fd < 0)
     {
-        perror("epoll_create1");
+        std::cerr << "epoll_create1" << std::endl;
         std::exit(1);
     }
     struct epoll_event ev;
@@ -29,7 +29,7 @@ EventLoop::EventLoop(ServerCore &srv) : server(srv)
 
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listen_fd, &ev) < 0)
         {
-            perror("epoll_ctl listen_fd");
+            std::cerr << "epoll_ctl listen_fd" << std::endl;
             std::exit(1);
         }
         listening_fds.insert(listen_fd);
@@ -168,17 +168,11 @@ void EventLoop::handle_client(int client_fd)
         // todo after method: add timeouts
     }
     else if (result == INCOMPLETE)
-    {
-        std::cout << "Incomplete request from client " << client_fd << " (waiting for more data)" << std::endl;
         return;
-    }
     else 
     {
-        std::string response =
-            "HTTP/1.1 400 Bad Request\r\n"
-            "Content-Length: 0\r\n"
-            "\r\n";
-        send(client_fd, response.c_str(), response.size(), 0);
+        ErrorHandler error_mesg(connection.location, connection);
+        error_mesg.generate_error_response(400);
 
         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
         close(client_fd);

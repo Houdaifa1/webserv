@@ -105,16 +105,19 @@ bool is_cgi_request(const Location &loc, const std::string &fullpath)
 
 std::string generate_filename(const std::string &content_type)
 {
-    std::stringstream ss;
-    ss << std::time(NULL);
-    std::string timestamp = ss.str();
+    static int counter = 0;
+    ++counter;
 
+    std::stringstream ss;
+    ss << std::time(NULL) << "{" <<  counter << "}" <<  (std::rand() % 10000);
+    std::string filename = ss.str();
     if (content_type.find("text/html") != std::string::npos)
-        return "test_" + timestamp + ".html";
+        return "test_" + filename + ".html";
     else if (content_type.find("application/json") != std::string::npos)
-        return "test_" + timestamp + ".json";
+        return "test_" + filename + ".json";
     else if (content_type.find("application/octet-stream") != std::string::npos)
-        return "upload_" + timestamp + ".bin";
+        return "upload_" + filename + ".bin";
     else
-        return "test_" + timestamp + ".txt";
+        return "test_" + filename + ".txt";
 }
+

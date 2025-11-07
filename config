@@ -25,6 +25,14 @@ server {
         #root /home/nirou/va/ww/html ;
         root /home/nirou/Downloads ;
         cgi_path /home/nirou/va/ww/html;
+    }
+
+    location /webserv-20 {
+        allowed_methods  POST GET DELETE;
+        # autoindex on;
+        # root /home/nirou/Downloads ;
+        upload_store /home/nirou/Desktop/webserv-20/upload ;
+        cgi_path /home/nirou/va/ww/html;
         
     }
 
