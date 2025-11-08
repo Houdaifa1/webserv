@@ -60,27 +60,6 @@ void Environment::SetEnv() {
     // env.push_back("****TEST_ROOT: " + conn.location.path);
     env.push_back("REMOTE_ADDR=" + conn.client_ip);
     env.push_back("REMOTE_PORT=" + req.get_host_port());
-    // std::cout << "******* Directives ********\n";
-    // int i = 1;
-
-    // for(iter = conn.location.directives.begin(); iter != conn.location.directives.end(); ++iter){
-    //     std::cout << "Directive: No " << i++ << std::endl;
-    //     std::cout << "Name: " << iter->name << std::endl;
-    //     std::cout << "Args: ";
-    //     for(it = iter->args.begin(); it != iter->args.end(); ++it){
-    //         std::cout << *it << " - ";
-    //     }
-    //     std::cout << "\n";
-    // }
-    // for(int i = 0; i < size; i++){
-    //     std::cout << "Directive: No "<< std::endl;
-    //     std::cout << "Name: " << conn.location.directives[i].name << std::endl;
-    //     std::cout << "Args: ";
-    //     for(it = env.begin(); it != env.end(); ++it){
-    //         std::cout << *it << " - ";
-    //     }
-    //     std::cout << "\n";
-    // }
 }
 
 void Environment::PrintEnv(){
