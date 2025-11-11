@@ -4,9 +4,6 @@
 HttpHandler::HttpHandler(Connection &connection) : connection(connection)
 {
      ErrorHandler error_mesg(connection.location, connection);
-     std::cout << connection.client_fd
-               << " | Client: " << connection.client_ip << ":" << connection.client_port
-               << " | Server: " << connection.server_ip << ":" << connection.server_port << std::endl;
      if (!correct_path())
           return;
      check_final_path();
@@ -108,7 +105,7 @@ bool HttpHandler::decode_path(std::string &path)
                if (!check_is_hex(h2))
                     return false;
                byte_val = get_hex_value(h1, h2);
-               std::cout << "byte : " << byte_val << std::endl;
+               // std::cout << "byte : " << byte_val << std::endl;
                if (byte_val == 0)
                     return false;
                if (byte_val == 47)
@@ -416,7 +413,7 @@ void HttpHandler::handle_get()
      int status_code;
      PathCheck check = check_path_exist(connection.request_full_path);
      ErrorHandler error_mesg(connection.location, connection);
-
+     logHttpRequest("GET", connection.request.get_requestpath(), connection.client_ip, connection.client_fd);
      if (check == Error)
      {
           error_mesg.generate_error_response(403);
@@ -487,6 +484,7 @@ void HttpHandler::handle_post()
     std::string correct_path = connection.request.get_correct_path();
     ErrorHandler error_mesg(connection.location, connection);
 
+    logHttpRequest("POST", connection.request.get_requestpath(), connection.client_ip, connection.client_fd);
     if (!is_method_allowed(connection.location, "POST"))
     {
         error_mesg.generate_error_response(405);
@@ -550,6 +548,7 @@ void HttpHandler::handle_delete()
 {
      std::string    correct_path = connection.request.get_correct_path();
      ErrorHandler   error_mesg(connection.location, connection);
+     logHttpRequest("DELETE", connection.request.get_requestpath(), connection.client_ip, connection.client_fd);
      if (!is_method_allowed(connection.location, "DELETE"))
      {
           std::cout << "enter isnide method not allowed on DELETE" << std::endl;

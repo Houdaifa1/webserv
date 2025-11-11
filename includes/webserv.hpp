@@ -14,6 +14,7 @@
 # include "utils_hpp/ResponseUtils.hpp"
 # include "multiplexing_hpp/EventLoop_utils.hpp"
 # include "signal.h"
+# include "utils_hpp/logs.hpp"
 
 
 enum RequestResult

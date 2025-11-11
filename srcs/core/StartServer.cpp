@@ -5,6 +5,7 @@
 int startserver(const Config &config)
 {
     ServerCore servercore(config);
+    logServerStart();
     try 
     {
         servercore.init_sockets();

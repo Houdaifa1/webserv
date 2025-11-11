@@ -9,7 +9,7 @@ server {
     error_page 404 /404.html;
     error_page 404 403 4545 /404.html;
 
- root /var/www/html ;     
+    root /var/www/html ;     
     
     location / {
         error_page 404 /4004.html;
@@ -29,8 +29,9 @@ server {
 
     location /webserv-20 {
         allowed_methods  POST GET DELETE;
-        # autoindex on;
-        # root /home/nirou/Downloads ;
+        index  index.html;
+        autoindex on;
+        root /home/nirou/Desktop/webserv-20 ;
         upload_store /home/nirou/Desktop/webserv-20/upload ;
         cgi_path /home/nirou/va/ww/html;
         

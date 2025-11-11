@@ -11,7 +11,6 @@
 EventLoop::EventLoop(ServerCore &srv) : server(srv)
 {
     epoll_fd = epoll_create1(0);
-    std::cout << "epoll_fd = " << epoll_fd << std::endl;
     if (epoll_fd < 0)
     {
         std::cerr << "epoll_create1" << std::endl;
@@ -33,8 +32,9 @@ EventLoop::EventLoop(ServerCore &srv) : server(srv)
             std::exit(1);
         }
         listening_fds.insert(listen_fd);
-        std::cout << "Listening on FD: " << listen_fd << std::endl;
+        // std::cout << "Listening on FD: " << listen_fd << std::endl;
     }
+    logReady();
 }
 
 EventLoop::~EventLoop()
@@ -63,8 +63,7 @@ void EventLoop::cleanup_connection(int fd)
     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
     close(fd);
     connections.erase(it);
-
-    std::cout << "[debug] cleaned up connection fd=" << fd << std::endl;
+    logClientDisconnected(fd);
 }
 
 
@@ -113,7 +112,12 @@ void EventLoop::accept_client(int listen_fd)
     ev.data.fd = client_fd;
     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev);
 
-    std::cout << "Accepted client FD: " << client_fd << std::endl;
+    std::map<int, Connection>::iterator it = connections.find(client_fd);
+    if (it == connections.end())
+        return; 
+    Connection &connection = it->second;
+    logClientConnected(connection.client_ip, connection.client_port, connection.client_fd);
+    
 }
 
 void EventLoop::handle_client(int client_fd)
@@ -135,7 +139,7 @@ void EventLoop::handle_client(int client_fd)
             epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
             close(client_fd);
             connections.erase(it);
-            std::cout << "client closed connection: " << client_fd << std::endl;
+            logClientDisconnected(client_fd);
             return;
         }
         else
@@ -177,6 +181,7 @@ void EventLoop::handle_client(int client_fd)
         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
         close(client_fd);
         connections.erase(it);
+        logClientDisconnected(client_fd);
     }
     
 }
@@ -276,7 +281,7 @@ void EventLoop::run()
         int n = epoll_wait(epoll_fd, events.data(), MAX_EVENTS, -1);
         if (n < 0)
         {
-            perror("epoll_wait");
+            std::cerr << "epoll_wait";
             break;
         }
         for (i = 0; i < n; i++)
