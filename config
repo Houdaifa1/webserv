@@ -1,8 +1,12 @@
 
 
 server {
+
+
     listen 8080;
-    listen 8080;
+    
+
+
     server_name example.com;
 
     client_max_body_size 1G;
@@ -73,7 +77,8 @@ server {
 
 
 server {
-    listen 127.0.0.1:1555  ;
+    listen 127.0.0.3:8080;
+
     server_name secure.example.com;
 
    
@@ -86,10 +91,10 @@ server {
      
    
     location /api/ {
-        allowed_methods POST;
+        allowed_methods GET POST;
         autoindex on;
         upload_store /var/www/uploads;
-          root /var/www/example ;
+          root / ;
     }
 
 
@@ -99,6 +104,7 @@ server {
 
 server {
     listen 5555;
+     
     root /var/www/html;
 
     error_page 403 /errors/403.html;
