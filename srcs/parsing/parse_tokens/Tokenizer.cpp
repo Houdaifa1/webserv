@@ -10,9 +10,14 @@ std::vector<Token>  Tokenizer::get_tokens()
 }
 void Tokenizer::get_config_in_str()
 {
-    std::ifstream file(file_name.c_str());
-    if (!file.is_open())
+    if (access(file_name.c_str(), F_OK) != 0)
         throw TokenizerError(FileNotFound, col, line);
+
+    if (access(file_name.c_str(), R_OK) != 0)
+        throw TokenizerError(FileAccessDenied, col, line);
+
+    std::ifstream file(file_name.c_str());
+    config.clear();
     std::string line;
     while (std::getline(file, line))
     {

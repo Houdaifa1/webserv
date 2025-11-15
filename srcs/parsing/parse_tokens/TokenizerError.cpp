@@ -14,6 +14,9 @@ TokenizerError::TokenizerError(ErrorType type, int col, int line, char badchar)
         case EmptyFile:
             mesg = "Empty File\n";
             break;
+        case FileAccessDenied:
+            mesg = "File Access Denied\n";
+            break;
         case InvalidIdentifierChar:
             mesg += position;
             mesg += "Invalid character '" + std::string(1, badchar) + "' for Identifier\n";

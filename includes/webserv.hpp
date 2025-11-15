@@ -24,7 +24,7 @@ enum RequestResult
     ERROR    
 };
 
-int             get_config(char *file_name, Config  &config);
+int             get_config(std::string file_name, Config  &config);
 void            parse_listen(Directive &directive, std::string &path);
 void            parse_root(Directive &directive, std::string &path);
 void            parse_autoindex(Directive &directive, std::string &path);

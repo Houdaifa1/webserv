@@ -10,6 +10,7 @@ enum    ErrorType
     InvalidIdentifierChar,
     UnclosedQuote,
     InvalidChar,
+    FileAccessDenied,
 };
 
 class TokenizerError

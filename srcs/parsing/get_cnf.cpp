@@ -1,6 +1,6 @@
 #include "../../includes/webserv.hpp"
 
-int get_config(char *file_name, Config  &config)
+int get_config(std::string file_name, Config  &config)
 {
     int exit_code = 0;
 
