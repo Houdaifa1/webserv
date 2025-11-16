@@ -128,16 +128,6 @@ RequestResult parse_http_request(std::string& request, HttpRequest &req)
     if (!parse_headers(request, index, req))
         return ERROR;
     index += 2;
-
-    // std::map<std::string, std::string> headers = req.get_headers();
-    // std::map<std::string, std::string>::iterator it;
-
-    // for (it = headers.begin(); it != headers.end(); it++)
-    // {
-    //     std::cout << "key : " << it->first << "   value : " << it->second << "\n";
-    // }
-    // std::cout << "youuu" << req.get_host_domain() << " : "<< req.get_host_port() << "\n\n";
-
     return(parse_body(request, index, req));
 
 }

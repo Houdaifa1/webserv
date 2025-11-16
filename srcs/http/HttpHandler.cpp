@@ -270,10 +270,10 @@ bool HttpHandler::correct_path()
 void HttpHandler::check_final_path()
 {
      std::string root = connection.location.root;
-     normalize_path(root);
+     // normalize_path(root);
      std::string request_path = connection.request.get_correct_path();
      std::string final_path = root + "/" + request_path;
-     normalize_path(final_path);
+     // normalize_path(final_path);
      connection.request_full_path = final_path;
 }
 
@@ -485,11 +485,6 @@ void HttpHandler::handle_post()
     ErrorHandler error_mesg(connection.location, connection);
 
     logHttpRequest("POST", connection.request.get_requestpath(), connection.client_ip, connection.client_fd);
-    if (!is_method_allowed(connection.location, "POST"))
-    {
-        error_mesg.generate_error_response(405);
-        return;
-    }
     std::string len_str = get_header_value(connection.request, "Content-Length");
     size_t client_max_body_size = get_client_max_body_size(connection.server);
 
@@ -531,15 +526,33 @@ void HttpHandler::handle_post()
         error_mesg.generate_error_response(400);
         return;
     }
-    std::string filename = generate_filename(content_type);
+    std::string file_to_write;
+    std::string filename;
+    if (content_type.find("multipart/form-data") != std::string::npos)
+    {
+          filename = extract_multipart_filename(body);
+          if (filename.empty())
+            filename = generate_filename(content_type);
+          size_t p = content_type.find("boundary=");
+          if (p == std::string::npos)
+              return error_mesg.generate_error_response(400);
+          std::string boundary = content_type.substr(p + 9);
+          if (!boundary.empty() && boundary[0] == '"' && boundary[boundary.size() - 1] == '"')
+               boundary = boundary.substr(1, boundary.size() - 2);
+          if (!extract_multipart_file(body, boundary, file_to_write))
+              return error_mesg.generate_error_response(400);
+    }
+    else
+    {
+          file_to_write = body;
+          filename = generate_filename(content_type);
+    }
+
     std::string complet_fullpath = fullpath + "/" + filename;
     std::ofstream ofs(complet_fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
     if (!ofs.is_open() || !ofs.good())
-    {
-        error_mesg.generate_error_response(500);
-        return;
-    }
-    ofs.write(body.c_str(), body.size());
+        return error_mesg.generate_error_response(500);
+    ofs.write(file_to_write.data(), file_to_write.size());
     ofs.close();
     send_created_html(connection.client_fd, correct_path);
 }
@@ -549,12 +562,6 @@ void HttpHandler::handle_delete()
      std::string    correct_path = connection.request.get_correct_path();
      ErrorHandler   error_mesg(connection.location, connection);
      logHttpRequest("DELETE", connection.request.get_requestpath(), connection.client_ip, connection.client_fd);
-     if (!is_method_allowed(connection.location, "DELETE"))
-     {
-          std::cout << "enter isnide method not allowed on DELETE" << std::endl;
-          error_mesg.generate_error_response(405);
-          return;
-     }
      std::string    server_root = resolve_upload_path(connection.location);
      std::string    fullpath = make_fullpath(server_root, correct_path);
 

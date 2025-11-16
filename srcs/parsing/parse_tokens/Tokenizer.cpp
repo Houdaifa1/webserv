@@ -197,7 +197,7 @@ bool Tokenizer::consume_digit()
 
 bool Tokenizer::consume_path()
 {
-    if (c == '/')
+    if (c == '/' || c == '.')
     {
         int start_col = col;
         std::string value;

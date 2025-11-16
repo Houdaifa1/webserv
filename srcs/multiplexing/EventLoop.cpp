@@ -8,6 +8,34 @@
 #include <netinet/in.h>
 # include "../../includes/cgi/cgihandler.hpp"
 
+void    EventLoop::check_timeouts()
+{
+    const int   READ_TIMEOUT = 10;
+    std::vector<int> to_close;
+    time_t now = std::time(NULL);
+
+    std::map<int, Connection>::iterator it = connections.begin();
+    for (; it != connections.end(); ++it)
+    {
+        int fd = it->first;
+        if (listening_fds.count(fd))
+            continue;
+        
+        Connection &conn = it->second;
+        if (now - conn.last_activity >= READ_TIMEOUT)
+            to_close.push_back(fd);
+    }
+    for (size_t i = 0; i < to_close.size(); ++i)
+        cleanup_connection(to_close[i]); 
+}
+
+void    EventLoop::update_activity(int fd)
+{
+    std::map<int, Connection>::iterator it = connections.find(fd);
+    if (it != connections.end())
+        it->second.last_activity = std::time(NULL);
+}
+
 EventLoop::EventLoop(ServerCore &srv) : server(srv)
 {
     epoll_fd = epoll_create1(0);
@@ -117,6 +145,7 @@ void EventLoop::accept_client(int listen_fd)
         return; 
     Connection &connection = it->second;
     logClientConnected(connection.client_ip, connection.client_port, connection.client_fd);
+    connection.last_activity = std::time(NULL);
     
 }
 
@@ -133,13 +162,13 @@ void EventLoop::handle_client(int client_fd)
     {
         bytes = recv(client_fd, buffer, sizeof(buffer), 0);
         if (bytes > 0)
+        {
             connection.buffer.append(buffer, bytes);
+            update_activity(client_fd);
+        }
         else if (bytes == 0)
         {
-            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-            close(client_fd);
-            connections.erase(it);
-            logClientDisconnected(client_fd);
+            cleanup_connection(client_fd);
             return;
         }
         else
@@ -169,7 +198,6 @@ void EventLoop::handle_client(int client_fd)
         }
         cleanup_connection(client_fd);
         return;
-        // todo after method: add timeouts
     }
     else if (result == INCOMPLETE)
         return;
@@ -177,11 +205,7 @@ void EventLoop::handle_client(int client_fd)
     {
         ErrorHandler error_mesg(connection.location, connection);
         error_mesg.generate_error_response(400);
-
-        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-        close(client_fd);
-        connections.erase(it);
-        logClientDisconnected(client_fd);
+        cleanup_connection(client_fd);
     }
     
 }
@@ -272,13 +296,14 @@ void EventLoop::run()
     int fd;
     int i;
     const int MAX_EVENTS = 64;
+    const int EPOLL_TIMEOUT_MS = 1000;
     std::vector<struct epoll_event> events(MAX_EVENTS);
 
     while (true)
     {
         signal(SIGINT, SignalHandler);
         signal(SIGQUIT, SignalHandler);
-        int n = epoll_wait(epoll_fd, events.data(), MAX_EVENTS, -1);
+        int n = epoll_wait(epoll_fd, events.data(), MAX_EVENTS, EPOLL_TIMEOUT_MS);
         if (n < 0)
         {
             std::cerr << "epoll_wait";
@@ -293,6 +318,11 @@ void EventLoop::run()
                 accept_client(fd);
                 continue;
             }
+            if (ev & (EPOLLERR | EPOLLHUP))
+            {
+                cleanup_connection(fd);
+                continue;
+            }
             if (ev & EPOLLIN)
             {
                 handle_client(fd);
@@ -302,5 +332,6 @@ void EventLoop::run()
                 handle_write(fd);
             }
         }
+        check_timeouts();
     }
 }

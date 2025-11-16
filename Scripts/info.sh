@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#sleep 20
 # Use a "here document" to output the HTML structure
 cat <<EOF
 <!DOCTYPE html>
@@ -55,3 +56,5 @@ cat <<EOF
 </body>
 </html>
 EOF
+
+sleep 20

@@ -35,6 +35,7 @@ class Connection
         bool    sending_file;
         off_t   out_file_size;
         off_t   out_file_pos;
+        time_t  last_activity;
 
         Connection(int client_fd, const Server &server,
                const std::string &client_ip, int client_port,
