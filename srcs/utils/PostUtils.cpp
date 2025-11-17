@@ -121,9 +121,10 @@ std::string generate_filename(const std::string &content_type)
         return "test_" + filename + ".txt";
 }
 
-bool extract_multipart_file(const std::string &body, const std::string &boundary, std::string &filedata)
+bool extract_multipart_file(const std::string &body, const std::string &boundary, size_t &data_start, size_t &data_len)
 {
     std::string dash = "--" + boundary;
+
     size_t part_start = body.find(dash);
     if (part_start == std::string::npos)
         return false;
@@ -131,13 +132,17 @@ bool extract_multipart_file(const std::string &body, const std::string &boundary
     size_t header_end = body.find("\r\n\r\n", part_start);
     if (header_end == std::string::npos)
         return false;
-    size_t data_start = header_end + 4;
+
+    data_start = header_end + 4;
+
     size_t data_end = body.find(dash, data_start);
-    if (data_end == std::string::npos) return false;
+    if (data_end == std::string::npos)
+        return false;
 
     if (data_end >= 2)
         data_end -= 2;
-    filedata = body.substr(data_start, data_end - data_start);
+
+    data_len = data_end - data_start;
     return true;
 }
 

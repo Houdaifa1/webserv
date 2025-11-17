@@ -17,7 +17,7 @@ bool is_writable_file(const std::string &path);
 bool is_cgi_request(const Location &loc, const std::string &fullpath);
 
 std::string generate_filename(const std::string &content_type);
-bool extract_multipart_file(const std::string &body, const std::string &boundary, std::string &filedata);
+bool extract_multipart_file(const std::string &body, const std::string &boundary, size_t &data_start, size_t &data_len);
 std::string extract_multipart_filename(const std::string &body);
 
 #endif

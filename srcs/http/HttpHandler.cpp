@@ -526,8 +526,9 @@ void HttpHandler::handle_post()
         error_mesg.generate_error_response(400);
         return;
     }
-    std::string file_to_write;
     std::string filename;
+    size_t data_start = 0;
+    size_t data_len = 0;
     if (content_type.find("multipart/form-data") != std::string::npos)
     {
           filename = extract_multipart_filename(body);
@@ -539,20 +540,21 @@ void HttpHandler::handle_post()
           std::string boundary = content_type.substr(p + 9);
           if (!boundary.empty() && boundary[0] == '"' && boundary[boundary.size() - 1] == '"')
                boundary = boundary.substr(1, boundary.size() - 2);
-          if (!extract_multipart_file(body, boundary, file_to_write))
+          if (!extract_multipart_file(body, boundary, data_start, data_len))
               return error_mesg.generate_error_response(400);
     }
     else
     {
-          file_to_write = body;
           filename = generate_filename(content_type);
+          data_start = 0;
+          data_len = body.size();
     }
 
     std::string complet_fullpath = fullpath + "/" + filename;
     std::ofstream ofs(complet_fullpath.c_str(), std::ios::binary | std::ios::out | std::ios::trunc);
     if (!ofs.is_open() || !ofs.good())
         return error_mesg.generate_error_response(500);
-    ofs.write(file_to_write.data(), file_to_write.size());
+    ofs.write(body.data() + data_start, data_len);
     ofs.close();
     send_created_html(connection.client_fd, correct_path);
 }
