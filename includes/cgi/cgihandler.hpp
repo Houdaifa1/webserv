@@ -12,7 +12,6 @@ class CgiHandler {
         HttpRequest &req;
         std::vector<Directive> direct;
         const std::string fullpath;
-        bool cmd_set;
         std::vector<char *> dst;
         int pipe_in[2];
         int pipe_out[2];

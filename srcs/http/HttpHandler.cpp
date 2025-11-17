@@ -20,13 +20,13 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
           CgiHandler cgi(connection, connection.request);
           if (cgi.CheckFile()){
               cgi.environment.SetEnv();
-              if (!cgi.SetCommands()){
+               if (!cgi.SetCommands()){
                     error_mesg.generate_error_response(500);
                     return;
                }
-              cgi.ExecuteScript();
+               if (!cgi.ExecuteScript())
+                    error_mesg.generate_error_response(500);
           }
-          std::cout << "CGI request detected for: " << req_path << std::endl;
           return ;
      }
      if (method == "GET")

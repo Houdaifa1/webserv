@@ -4,7 +4,7 @@
 CgiHandler::CgiHandler(Connection &conn, HttpRequest &req) : name("cgi_path"),
     conn(conn), req(req), direct(conn.location.directives),
     fullpath(conn.location.root + req.get_correct_path()),
-    cmd_set(false), environment(conn, req) {}
+    environment(conn, req) {}
 
 int CgiHandler::GetSize(){
     return (environment.GetEnv().size());
@@ -34,7 +34,6 @@ int CgiHandler::GetCommands(std::string ext, std::vector<std::string> &commands)
         tmp = (*it).find(type);
         if (tmp != std::string::npos && std::strcmp(it->c_str() + tmp, type.c_str()) == 0)
         {
-            std::cout << "I'M HERE:   2\n";
             if(*it == type){
                 temp = "/usr/bin/" + type;
                 command = temp;
@@ -65,13 +64,6 @@ int CgiHandler::SetCommands(){
         if (it->name == this->name){
                 if ((ext == ".py" && GetCommands(ext, it->args))
                     || (ext == ".sh" && GetCommands(ext, it->args))){
-                    cmd_set = true;
-
-                    // std::cout << "IM command: " << command << std::endl;
-                    // this->args[0] = command; // copy without c_str() to lose const
-                    // this->args[1] = cpp_strdup(fullpath.c_str()); // copy without c_str() to lose const
-                    // this->args[2] = NULL;
-                    // global_args = args;
                     break;
                 }
                 else 
@@ -119,11 +111,17 @@ int CgiHandler::ExecuteScript() {
 
     int parent_pid = fork();
 
-    if (parent_pid == 0){
-        // int status;
+    if (parent_pid == -1)
+        return (0);
 
-        if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1)
-            return (1);
+    if (parent_pid == 0){
+        signal(SIGINT, SIG_DFL);
+        signal(SIGQUIT, SIG_DFL);
+
+        if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1){
+            error_msg.generate_error_response(500);
+            std::exit(1);
+        }
 
         pid_t pid = fork();
 
@@ -132,7 +130,8 @@ int CgiHandler::ExecuteScript() {
             close(pipe_in[1]);
             close(pipe_out[0]);
             close(pipe_out[1]);
-            return (1);
+            error_msg.generate_error_response(500);
+            std::exit(1);
         }
         if (pid == 0){
             close(pipe_in[1]);
@@ -152,6 +151,26 @@ int CgiHandler::ExecuteScript() {
 
             close(pipe_in[1]);
 
+            time_t start_time = conn.last_activity;
+            const int TIMEOUT_SECONDS = 10;
+            pid_t wait_result;
+            int status;
+            struct timeval tv;
+            
+            while ((wait_result = waitpid(pid, &status, WNOHANG)) == 0) {
+                time_t current_time = std::time(NULL);
+                if (current_time - start_time > TIMEOUT_SECONDS) {
+                    kill(pid, SIGKILL);
+                    waitpid(pid, NULL, 0);
+                    close(pipe_out[0]);
+                    error_msg.generate_error_response(504);
+                    std::exit(1);
+                }
+                tv.tv_sec = 0;
+                tv.tv_usec = 100000;
+                select(0, NULL, NULL, NULL, &tv);
+            }
+
             std::string buffer;
             int bytes;
             while ((bytes = read(pipe_out[0], tmp, 500)) > 0)
@@ -170,8 +189,8 @@ int CgiHandler::ExecuteScript() {
             std::string response = header.str() + buffer;
             send(conn.client_fd, response.c_str(), response.length(), 0);
         }
-        exit(0);
+        std::exit(0);
     }
-    return (0);
+    return (1);
 }
 

@@ -10,7 +10,7 @@
 
 void    EventLoop::check_timeouts()
 {
-    const int   READ_TIMEOUT = 10;
+    const int   READ_TIMEOUT = 11;
     std::vector<int> to_close;
     time_t now = std::time(NULL);
 
@@ -89,6 +89,7 @@ void EventLoop::cleanup_connection(int fd)
         conn.out_file = NULL;
     }
     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+    std::cout << "closed: " << fd << std::endl;
     close(fd);
     connections.erase(it);
     logClientDisconnected(fd);
