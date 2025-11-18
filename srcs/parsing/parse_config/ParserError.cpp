@@ -77,6 +77,11 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
             mesg = "Error: directive " + value + " expects at least 2 arguments in ";
             break;
         }
+        case InvalidNumberArgsCgi:
+        {
+            mesg = "Error: directive " + value + " expects at least 1 arguments in ";
+            break;
+        }
         case OnOffexpected:
         {
             mesg = "Error: directive " + value + " expects on or off as argument  in ";
@@ -126,6 +131,11 @@ Parsererror::Parsererror(ParserErrorType type, std::string value , std::string &
         {
             mesg = "Error: missing required \"root\" directive for server in " + path  + "\n";
             return ;
+        }
+        case InvalidMethodArgs:
+        {
+            mesg = "Error: directive " + value + " expects GET/POST/DELETE as argument  in ";
+            break;
         }
     }
     mesg += error_location;

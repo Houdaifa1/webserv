@@ -5,24 +5,53 @@ Parser::Parser(const std::vector<Token> &tokens, std::string path) : tokens(toke
 
 
 
-bool Parser::is_known_directive(std::string &value)
+bool Parser::is_known_directive(std::string &value, const std::string &where)
 {
-    const char *directives[] = {
-        "listen", "error_log", "worker_processes" ,"client_max_body_size", "allowed_methods", "return",
-        "redirect", "root","error_page", "autoindex", "index", "server_name", "cgi_path", "upload_store"};
-    for (size_t i = 0; i < sizeof(directives)/sizeof(directives[0]); i++)
+    static const std::string location_directives[] = {
+        "allowed_methods",
+        "root",
+        "error_page",
+        "autoindex",
+        "index",
+        "cgi_path",
+        "upload_store"
+    };
+
+    static const std::string server_directives[] = {
+        "listen",
+        "root",
+        "client_max_body_size",
+        "error_page"
+    };
+
+    const std::string *arr = NULL;
+    size_t size = 0;
+
+    if (where == "location")
     {
-        if (value == directives[i])
+        arr = location_directives;
+        size = sizeof(location_directives) / sizeof(location_directives[0]);
+    }
+    else
+    {
+        arr = server_directives;
+        size = sizeof(server_directives) / sizeof(server_directives[0]);
+    }
+
+    for (size_t i = 0; i < size; i++)
+    {
+        if (value == arr[i])
             return true;
     }
+
     return false;
 }
 
-bool Parser::is_directive(Token &token)
+bool Parser::is_directive(Token &token, const std::string &where)
 {
     bool directive = false;
     if ((token.type == IDENTIFIER || token.type == STRING) &&
-        is_known_directive(token.value))
+        is_known_directive(token.value, where))
     {
         return true;
     }
@@ -133,7 +162,7 @@ Location Parser::parse_location()
             throw Parsererror(NestedBlocks, tokens[index].value, path, tokens[index].line);
         if (tokens[index].value == "server")
             throw Parsererror(TopBolockLow, tokens[index].value, path, tokens[index].line);
-        if (is_directive(tokens[index]))
+        if (is_directive(tokens[index], "location"))
         {
             Directive new_directive;
             new_directive = parse_directive();
@@ -183,7 +212,7 @@ Server Parser::parse_server()
         }
         if (tokens[index].value == "server")
             throw Parsererror(NestedBlocks, tokens[index].value,path, tokens[index].line);
-        if (is_directive(tokens[index]))
+        if (is_directive(tokens[index], "server"))
         {
             Directive new_directive;
             new_directive = parse_directive();
@@ -209,7 +238,10 @@ void Parser::check_directive(Directive &directive, bool &contain_listen, int &co
         global_root = directive.args[0];
         contain_root++;
     }
-
+    if (directive.name == "client_max_body_size")
+    {
+        parse_body_size(directive, path);
+    }
 
 }
 
@@ -239,7 +271,22 @@ void Parser::validate_config(Config &config)
                 config.servers[i].locations[j].autoindex = "none";
                 for (size_t y = 0; y < config.servers[i].locations[j].directives.size(); y++)
                 {
-                    
+                    if (config.servers[i].locations[j].directives[y].name == "allowed_methods")
+                    {
+                            parse_allowed_methods(config.servers[i].locations[j].directives[y], path);
+                    }
+                    if (config.servers[i].locations[j].directives[y].name == "upload_store")
+                    {
+                            parse_upload_store(config.servers[i].locations[j].directives[y], path);
+                    }
+                    if (config.servers[i].locations[j].directives[y].name == "cgi_path")
+                    {
+                            parse_cgi_path(config.servers[i].locations[j].directives[y], path);
+                    }
+                    if (config.servers[i].locations[j].directives[y].name == "index")
+                    {
+                            parse_index(config.servers[i].locations[j].directives[y], path);
+                    }
                     if (config.servers[i].locations[j].directives[y].name == "root")
                     {
                         parse_root(config.servers[i].locations[j].directives[y], path);
@@ -288,7 +335,7 @@ int Parser::Parseall(Config &config)
                 config.servers.push_back(new_server);
                 continue;
             }
-            if (is_directive(tokens[index]))
+            if (is_directive(tokens[index], "Global"))
             {
                 Directive new_directive;
                 new_directive = parse_directive();

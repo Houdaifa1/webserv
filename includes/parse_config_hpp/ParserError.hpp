@@ -29,6 +29,8 @@ enum ParserErrorType
     InvalidNumberArgs2,
     ErrorCode,
     NotPath,
+    InvalidMethodArgs,
+    InvalidNumberArgsCgi,
 };
 
 class Parsererror

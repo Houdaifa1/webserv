@@ -99,3 +99,41 @@ void parse_autoindex(Directive &directive, std::string &path)
     if (directive.args[0] != "on" && directive.args[0] != "off")
         throw Parsererror(OnOffexpected, directive.name, path, directive.position.line);
 }
+
+
+void parse_body_size(Directive &directive, std::string &path)
+{
+    if (directive.args.size() != 1)
+        throw Parsererror(InvalidNumberArgs, directive.name, path, directive.position.line);
+}
+
+void parse_upload_store(Directive &directive, std::string &path)
+{
+    if (directive.args.size() != 1)
+        throw Parsererror(InvalidNumberArgs, directive.name, path, directive.position.line);
+}
+
+void parse_index(Directive &directive, std::string &path)
+{
+    if (directive.args.size() < 1)
+        throw Parsererror(InvalidNumberArgsCgi, directive.name, path, directive.position.line);
+}
+
+void parse_cgi_path(Directive &directive, std::string &path)
+{
+    if (directive.args.size() < 1)
+        throw Parsererror(InvalidNumberArgsCgi, directive.name, path, directive.position.line);
+}
+
+
+void parse_allowed_methods(Directive &directive, std::string &path)
+{
+    if (directive.args.size() > 3)
+        throw Parsererror(InvalidNumberArgs, directive.name, path, directive.position.line);
+    for (size_t i = 0; i < directive.args.size(); i++)
+    {
+        if (directive.args[i] != "GET" && directive.args[i] != "POST"
+        && directive.args[i] != "DELETE")
+            throw Parsererror(InvalidMethodArgs, directive.name, path, directive.position.line);
+    }
+}
