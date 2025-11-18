@@ -1,5 +1,6 @@
 #include "../../includes/multiplexing_hpp/EventLoop.hpp"
 #include "../../includes/webserv.hpp"
+#include "../../includes/utils_hpp/Signals.hpp"
 #include <unistd.h>
 #include <fcntl.h>
 #include <iostream>
@@ -8,10 +9,33 @@
 #include <netinet/in.h>
 # include "../../includes/cgi/cgihandler.hpp"
 
+void EventLoop::shutdown()
+{
+    std::map<int, Connection>::iterator it = connections.begin();
+    for (; it != connections.end(); ++it)
+    {
+        int fd = it->first;
+        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+        close(fd);
+    }
+    connections.clear();
+    std::set<int>::iterator sit = listening_fds.begin();
+    while (sit != listening_fds.end())
+    {
+        int fd = *sit;
+        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+        close(fd);
+        ++sit;
+    }
+    listening_fds.clear();
+    close(epoll_fd);
+}
+
+
 void    EventLoop::check_timeouts()
 {
     const int   READ_TIMEOUT = 11;
-    std::vector<int> to_close;
+    std::vector<int> expired_fds;
     time_t now = std::time(NULL);
 
     std::map<int, Connection>::iterator it = connections.begin();
@@ -23,10 +47,20 @@ void    EventLoop::check_timeouts()
         
         Connection &conn = it->second;
         if (now - conn.last_activity >= READ_TIMEOUT)
-            to_close.push_back(fd);
+            expired_fds.push_back(fd);
     }
-    for (size_t i = 0; i < to_close.size(); ++i)
-        cleanup_connection(to_close[i]); 
+    for (size_t i = 0; i < expired_fds.size(); ++i)
+    {
+        int fd = expired_fds[i];
+        std::map<int, Connection>::iterator it =  connections.find(fd);
+        if (it != connections.end())
+        {
+            Connection &conn = it->second;
+            ErrorHandler    error_mesg(conn.location, conn);
+            error_mesg.generate_error_response(408);
+        }
+        cleanup_connection(fd);
+    }
 }
 
 void    EventLoop::update_activity(int fd)
@@ -60,7 +94,6 @@ EventLoop::EventLoop(ServerCore &srv) : server(srv)
             std::exit(1);
         }
         listening_fds.insert(listen_fd);
-        // std::cout << "Listening on FD: " << listen_fd << std::endl;
     }
     logReady();
 }
@@ -89,7 +122,6 @@ void EventLoop::cleanup_connection(int fd)
         conn.out_file = NULL;
     }
     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-    std::cout << "closed: " << fd << std::endl;
     close(fd);
     connections.erase(it);
     logClientDisconnected(fd);
@@ -294,20 +326,19 @@ void EventLoop::handle_write(int client_fd)
 void EventLoop::run()
 {
     signal(SIGPIPE, SIG_IGN);
+    signal(SIGINT, SignalHandler);
+    signal(SIGQUIT, SignalHandler);
     int fd;
     int i;
     const int MAX_EVENTS = 64;
     const int EPOLL_TIMEOUT_MS = 1000;
     std::vector<struct epoll_event> events(MAX_EVENTS);
-
-    while (true)
+    while (!g_stop)
     {
-        signal(SIGINT, SignalHandler);
-        signal(SIGQUIT, SignalHandler);
         int n = epoll_wait(epoll_fd, events.data(), MAX_EVENTS, EPOLL_TIMEOUT_MS);
         if (n < 0)
         {
-            std::cerr << "epoll_wait";
+            std::cerr << "Server shutdown" << std::endl;
             break;
         }
         for (i = 0; i < n; i++)
@@ -335,4 +366,6 @@ void EventLoop::run()
         }
         check_timeouts();
     }
+    shutdown();
+
 }

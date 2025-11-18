@@ -29,6 +29,7 @@ class EventLoop
         void    cleanup_connection(int fd);
         void    check_timeouts();
         void    update_activity(int fd);
+        void    shutdown();
 };
 
 #endif

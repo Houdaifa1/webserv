@@ -1,12 +1,13 @@
 #include "../../includes/webserv.hpp"
+#include "../../includes/utils_hpp/Signals.hpp"
 
-void    SignalHandler(int sig){
-    if (sig == SIGINT){
+bool    g_stop = false;
+
+void    SignalHandler(int sig)
+{
+    g_stop = true;
+    if (sig == SIGINT)
         std::cout << "\n**** SIGINT CALLED ****" << std::endl;
-        std::exit(1);
-    }
-    else if(sig == SIGQUIT){
+    else if(sig == SIGQUIT)
         std::cout << "\n**** SIGQUIT CALLED ****" << std::endl;
-        std::exit(1);
-    }
 }

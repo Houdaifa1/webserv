@@ -556,7 +556,7 @@ void HttpHandler::handle_post()
         return error_mesg.generate_error_response(500);
     ofs.write(body.data() + data_start, data_len);
     ofs.close();
-    send_created_html(connection.client_fd, correct_path);
+    send_created_html(connection.client_fd, complet_fullpath);
 }
 
 void HttpHandler::handle_delete()
