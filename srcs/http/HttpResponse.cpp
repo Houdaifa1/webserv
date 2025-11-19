@@ -84,8 +84,8 @@ void HttpResponse::sendresponse()
     else
         connection.out_file_size = 0;
     
-    connection.out_file = fopen(body_file_path.c_str(), "rb");
-    if (connection.out_file == NULL)
+    connection.out_file = open(body_file_path.c_str(), O_RDONLY);
+    if (connection.out_file < 0)
         return;
 
     connection.out_chunk.clear();

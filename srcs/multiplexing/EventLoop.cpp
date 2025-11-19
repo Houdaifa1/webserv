@@ -116,10 +116,10 @@ void EventLoop::cleanup_connection(int fd)
         return;
 
     Connection& conn = it->second;
-    if (conn.out_file)
+    if (conn.out_file >= 0)
     {
-        fclose(conn.out_file);
-        conn.out_file = NULL;
+        close(conn.out_file);
+        conn.out_file = -1;
     }
     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
     close(fd);
@@ -250,15 +250,15 @@ void EventLoop::handle_write(int client_fd)
 
     Connection &conn = it->second;
 
-    if (!conn.sending_file || conn.out_file == NULL)
+    if (!conn.sending_file || conn.out_file < 0)
         return;
 
     const size_t CHUNK_SIZE = 8192;
-    char tmp[CHUNK_SIZE];
+    char buf[CHUNK_SIZE];
     if (conn.out_chunk_size > conn.out_offset)
     {
-        const char *p = conn.out_chunk.c_str() + conn.out_offset;
         size_t remaining = conn.out_chunk_size - conn.out_offset;
+        const char *p = conn.out_chunk.c_str() + conn.out_offset;
         ssize_t s = send(client_fd, p, remaining, 0);
 
         if (s > 0)
@@ -282,24 +282,20 @@ void EventLoop::handle_write(int client_fd)
         }
     }
 
-    size_t nread = fread(tmp, 1, CHUNK_SIZE, conn.out_file);
-    if (nread == 0)
+    ssize_t nread = read(conn.out_file, buf, CHUNK_SIZE);
+    if (nread <= 0)
     {
-        if (feof(conn.out_file))
-            std::cout << "eof : finished file";
-        else
-            std::cout << "fread error";
         cleanup_connection(client_fd);
         return;
     }
-    ssize_t sent = send(client_fd, tmp, nread, 0);
+    ssize_t sent = send(client_fd, buf, nread, 0);
     if (sent > 0)
     {
-        conn.out_file_pos += (size_t)sent;
+        conn.out_file_pos += (ssize_t)sent;
 
-        if ((size_t)sent < nread)
+        if (sent < nread)
         {
-            conn.out_chunk.assign(tmp + sent, nread - sent);
+            conn.out_chunk.assign(buf + sent, nread - sent);
             conn.out_chunk_size = nread - sent;
             conn.out_offset = 0;
             rearm_epollout(epoll_fd, client_fd);
@@ -315,7 +311,7 @@ void EventLoop::handle_write(int client_fd)
     }
     else
     {
-        conn.out_chunk.assign(tmp, nread);
+        conn.out_chunk.assign(buf, nread);
         conn.out_chunk_size = nread;
         conn.out_offset = 0;
         rearm_epollout(epoll_fd, client_fd);

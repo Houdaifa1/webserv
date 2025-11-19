@@ -28,7 +28,7 @@ class Connection
         // HttpResponse response;
         ConnState       state;
 
-        FILE *out_file;
+        int     out_file;
         std::string out_chunk;
         size_t out_chunk_size;
         size_t  out_offset;

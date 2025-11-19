@@ -7,6 +7,6 @@ Connection::Connection(int client_fd, const Server &server,
             client_fd(client_fd), server(server),
             client_ip(client_ip), client_port(client_port),
             server_ip(server_ip), server_port(server_port),
-            out_file(NULL), out_chunk(), out_chunk_size(0), 
+            out_file(-1), out_chunk(), out_chunk_size(0), 
             out_offset(0), sending_file(false), out_file_size(0),
             out_file_pos(0) {last_activity = std::time(NULL);}
