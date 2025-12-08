@@ -8,7 +8,7 @@ import urllib.request
 import urllib.error
 
 # --- CONFIGURATION ---
-API_KEY = os.environ.get('KEY', '')
+API_KEY = os.environ.get('GROK_API', '')
 MODEL = "llama-3.1-8b-instant"
 
 # --- SILENCE STDERR ---
