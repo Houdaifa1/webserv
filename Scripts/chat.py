@@ -9,7 +9,7 @@ import urllib.error
 
 # --- CONFIGURATION ---
 # 1. GET KEY: https://console.groq.com/keys
-API_KEY = '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' 
+API_KEY = os.environ.get('GROK_API', '')
 
 # 2. MODEL: Groq provides Llama 3 for free and it is SUPER FAST.
 MODEL = "llama-3.1-8b-instant"

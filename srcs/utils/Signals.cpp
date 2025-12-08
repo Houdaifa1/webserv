@@ -7,7 +7,7 @@ void    SignalHandler(int sig)
 {
     g_stop = true;
     if (sig == SIGINT)
-        std::cout << "\n**** SIGINT CALLED ****" << std::endl;
+        std::cout << "\nSIGINT CALLED" << std::endl;
     else if(sig == SIGQUIT)
-        std::cout << "\n**** SIGQUIT CALLED ****" << std::endl;
+        std::cout << "\nSIGQUIT CALLED" << std::endl;
 }
