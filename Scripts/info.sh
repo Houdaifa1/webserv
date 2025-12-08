@@ -50,7 +50,6 @@ cat <<EOF
         <p><span class="label">Client Port:</span> $REMOTE_PORT</p>
         <p><span class="label">Server Protocol:</span> $SERVER_PROTOCOL</p>
         <p><span class="label">User Agent:</span> $HTTP_USER_AGENT</p>
-        <p><span class="label">Query String:</span> $QUERY_STRING</p>
     </div>
 </body>
 </html>

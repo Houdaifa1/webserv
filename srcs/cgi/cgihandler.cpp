@@ -156,7 +156,7 @@ int CgiHandler::ExecuteScript() {
             pid_t wait_result;
             int status;
             struct timeval tv;
-            
+
             while ((wait_result = waitpid(pid, &status, WNOHANG)) == 0) {
                 time_t current_time = std::time(NULL);
                 if (current_time - start_time > TIMEOUT_SECONDS) {
@@ -183,10 +183,20 @@ int CgiHandler::ExecuteScript() {
             waitpid(pid, NULL, 0);
             std::stringstream header;
             header << "HTTP/1.0 200 Ok\r\n"
-                << "Content-Type: text/html\r\n"
-                << "Content-Length: " << buffer.size() << "\r\n"
+                << "Content-Type: text/html\r\n";
+            std::size_t pos = buffer.find("Set-Cookie:", 0);
+            size_t end = 0;
+            if (pos == 0){
+                for (end = pos; buffer[end] != '\n' ; end++)
+                    ;
+                std::string tmp = buffer.substr(pos, end);
+                header << tmp << "\r\n";
+                while (buffer[end] != '<')
+                end++;
+            }
+            header << "Content-Length: " << buffer.size() - end << "\r\n"
                 << "Connection: close\r\n\r\n";
-            std::string response = header.str() + buffer;
+            std::string response = header.str() + (buffer.c_str() + end);
             send(conn.client_fd, response.c_str(), response.length(), 0);
         }
         std::exit(0);

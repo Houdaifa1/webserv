@@ -54,10 +54,7 @@ void Environment::SetEnv() {
     env.push_back("REDIRECT_STATUS=200");
     env.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env.push_back("QUERY_STRING=" + req.get_query());
-    env.push_back("SCRIPT_NAME=" + conn.location.path + req.get_correct_path());
-    // conn.location.path should be fixed !!!!
     env.push_back("PATH_TRANSLATED=" + conn.location.root + req.get_correct_path());
-    // env.push_back("****TEST_ROOT: " + conn.location.path);
     env.push_back("REMOTE_ADDR=" + conn.client_ip);
     env.push_back("REMOTE_PORT=" + req.get_host_port());
 }
