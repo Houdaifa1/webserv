@@ -44,7 +44,7 @@ void Environment::SetHttpHeaders(){
 void Environment::SetEnv() {
     std::vector<Directive>::iterator iter;
     std::vector<std::string>::iterator it;
-    std::string grok_key("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");
+    std::string grok_key("");
 
     SetHeaders();
     SetHttpHeaders();
