@@ -43,17 +43,23 @@ SRC         = $(SRC_DIR)/main.cpp           \
               $(UTILS_SRC)/logs.cpp                     \
               $(UTILS_SRC)/Signals.cpp                   \
               $(CGI_SRC)/cgihandler.cpp                   \
-              $(CGI_SRC)/Environment.cpp                   \
+              $(CGI_SRC)/Environment.cpp                   
 
-              
+
+OBJ = $(SRC:.cpp=.o)
+
 all: $(NAME)
 
-$(NAME): $(SRC)
-	$(CC) $(CFLAGS) $(SRC) -o $(NAME)
+$(NAME): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
+	rm -f $(OBJ)
 
-fclean:
-	rm -rf $(NAME)
+fclean: clean
+	rm -f $(NAME)
 
 re: fclean all
