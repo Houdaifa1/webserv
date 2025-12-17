@@ -187,10 +187,18 @@ int CgiHandler::ExecuteScript() {
             std::size_t pos = buffer.find("Set-Cookie:", 0);
             size_t end = 0;
             if (pos == 0){
+                std::map<std::string, std::string> headers = req.get_headers();
+                std::map<std::string, std::string>::iterator it;
+                for (it = headers.begin(); it != headers.end(); ++it){
+                    if (it->first == "Cookie")
+                        break;
+                }
                 for (end = pos; buffer[end] != '\n' ; end++)
                     ;
-                std::string tmp = buffer.substr(pos, end);
-                header << tmp << "\r\n";
+                if (it == headers.end()){
+                    std::string tmp = buffer.substr(pos, end);
+                    header << tmp << "\r\n";
+                }
                 while (buffer[end] != '<')
                 end++;
             }

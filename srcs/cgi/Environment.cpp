@@ -44,7 +44,7 @@ void Environment::SetHttpHeaders(){
 void Environment::SetEnv() {
     std::vector<Directive>::iterator iter;
     std::vector<std::string>::iterator it;
-    std::string grok_key("");
+    std::string groq_key("");
 
     SetHeaders();
     SetHttpHeaders();
@@ -58,15 +58,7 @@ void Environment::SetEnv() {
     env.push_back("PATH_TRANSLATED=" + conn.location.root + req.get_correct_path());
     env.push_back("REMOTE_ADDR=" + conn.client_ip);
     env.push_back("REMOTE_PORT=" + req.get_host_port());
-    env.push_back("GROK_API=" + grok_key);
-}
-
-void Environment::PrintEnv(){
-    std::vector<std::string>::iterator iter;
-
-    for(iter = env.begin(); iter != env.end(); ++iter){
-        std::cout << *iter << std::endl;
-    }
+    env.push_back("GROQ_API=" + groq_key);
 }
 
 std::vector<std::string> Environment::GetEnv() {
