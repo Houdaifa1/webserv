@@ -179,6 +179,4 @@ try:
 
 except Exception:
     # Failsafe
-    print(f"Set-Cookie: session_id=error; Max-Age=60; Path=/")
-    print()
-    print("<html><body><h1>System Error</h1></body></html>")
+    sys.exit(1)

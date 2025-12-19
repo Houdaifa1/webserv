@@ -106,6 +106,7 @@ int CgiHandler::ExecuteScript() {
         dst.push_back((char *)it->c_str());
     }
     dst.push_back(NULL);
+
     char **env = dst.data();
     char *args[3] = {(char *)command.c_str(), (char *)fullpath.c_str(), NULL};
 
@@ -163,12 +164,25 @@ int CgiHandler::ExecuteScript() {
                     kill(pid, SIGKILL);
                     waitpid(pid, NULL, 0);
                     close(pipe_out[0]);
-                    error_msg.generate_error_response(504);
+                    error_msg.generate_error_response(500);
                     std::exit(1);
                 }
                 tv.tv_sec = 0;
                 tv.tv_usec = 100000;
                 select(0, NULL, NULL, NULL, &tv);
+            }
+
+            if (WIFEXITED(status)) {
+                if (WEXITSTATUS(status) != 0){
+                    close(pipe_out[0]);
+                    error_msg.generate_error_response(500);
+                    std::exit(1);
+                }
+            }
+            else if (WIFSIGNALED(status)) {
+                close(pipe_out[0]);
+                error_msg.generate_error_response(500);
+                std::exit(1);
             }
 
             std::string buffer;
@@ -180,7 +194,6 @@ int CgiHandler::ExecuteScript() {
             }
             close(pipe_out[0]);
 
-            waitpid(pid, NULL, 0);
             std::stringstream header;
             header << "HTTP/1.0 200 Ok\r\n"
                 << "Content-Type: text/html\r\n";
