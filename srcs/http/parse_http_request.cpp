@@ -48,8 +48,6 @@ bool parse_request_line(std::string &request_line, HttpRequest &req)
         return false;
     if (words[0].empty() || words[1].empty() || words[2].empty())
         return false;
-    if (words[0] != "GET" && words[0] != "POST" && words[0] != "DELETE")
-        return false;
     if (words[1][0] != '/')
         return false;
     if (words[2] != "HTTP/1.1" && words[2] != "HTTP/1.0")
@@ -132,27 +130,3 @@ RequestResult parse_http_request(std::string& request, HttpRequest &req)
 
 }
 
-
-
-// int main ()
-// {
-
-//     std::string request = "GET /index.html HTTP/1.1\r\n"
-//                       "Host: www.example.com\r\n"
-//                       "Connection: keep-alive\r\n"
-//                       "Content-Length: 5\r\n"
-//                       "\r\n\r\n"
-//                       "Hello";
-//                    HttpRequest req;  
-//     RequestResult result = parse_http_request(request,req);
-//     std::cout << "Method : " << req.get_httpmethod() << std::endl;
-//     std::cout << "Path : " << req.get_requestpath() << std::endl;
-//     std::cout << "Version : " << req.get_httpversion() << std::endl;
-//     std::map<std::string, std::string> map = req.get_headers();
-//     std::cout << "\n    Headers\n" <<  std::endl;
-//     for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); it++)
-//     {
-//         std::cout << it->first << "   :   " <<  it->second << std::endl;
-//     }
-//     std::cout << "\n    Body\n" << std::endl << req.get_body() << std::endl;
-// }

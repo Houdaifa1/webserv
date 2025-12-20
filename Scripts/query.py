@@ -4,10 +4,10 @@ import os
 import cgi
 import html
 import urllib.parse
+import sys
 
 # --- Helper function to print the HTML structure ---
 def print_html(title, content):
-    """Prints the full HTML page with neon blue styling."""
     
     print(f"""<!DOCTYPE html>
 <html lang="en">
@@ -49,13 +49,8 @@ def print_html(title, content):
             margin-bottom: 0.5rem;
             border-radius: 4px;
         }}
-        .key {{
-            color: #ffffff;
-            font-weight: bold;
-        }}
-        .value {{
-            color: #00ccff;
-        }}
+        .key {{ color: #ffffff; font-weight: bold; }}
+        .value {{ color: #00ccff; }}
     </style>
 </head>
 <body>
@@ -65,14 +60,12 @@ def print_html(title, content):
 </html>
 """)
 
-# --- Main script logic ---
 def main():
     method = os.environ.get("REQUEST_METHOD", "GET")
     content = ""
 
     if method == "POST":
-        # --- POST RESPONSE ---
-        # Parse form data just to show it
+        # Parse form data. FieldStorage reads from sys.stdin automatically
         form = cgi.FieldStorage()
         
         content = "<h2>POST Data Received</h2>"
@@ -81,33 +74,30 @@ def main():
         else:
             content += "<ul>"
             for key in form.keys():
-                # html.escape to prevent XSS
                 escaped_key = html.escape(key)
-                escaped_value = html.escape(form.getvalue(key))
+                # handle potential list of values or single value
+                val = form.getvalue(key)
+                if isinstance(val, list):
+                    escaped_value = ", ".join([html.escape(v) for v in val])
+                else:
+                    escaped_value = html.escape(str(val))
                 content += f"<li><span class='key'>{escaped_key}:</span> <span class='value'>{escaped_value}</span></li>"
             content += "</ul>"
 
     else:
-        # --- GET RESPONSE ---
         query_string = os.environ.get("QUERY_STRING", "")
-        
         content = "<h2>GET Query String Parameters</h2>"
         
         if not query_string:
             content += "<p>No query string was provided in the URL.</p>"
         else:
-            # Parse the query string into a list of key-value pairs
-            # urllib.parse.parse_qsl correctly handles URL decoding
             query_list = urllib.parse.parse_qsl(query_string)
-            
             content += "<ul>"
             for key, value in query_list:
-                # html.escape to prevent XSS
                 escaped_key = html.escape(key)
                 escaped_value = html.escape(value)
                 content += f"<li><span class='key'>{escaped_key}:</span> <span class='value'>{escaped_value}</span></li>"
             content += "</ul>"
-            
             content += "<h2>Raw Query String</h2>"
             content += f"<pre>{html.escape(query_string)}</pre>"
 
@@ -116,9 +106,5 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception as e:
-        # Generic error handling
-        print("<!DOCTYPE html><html><head><title>CGI Error</title></head>")
-        print("<body><h1>CGI Script Error</h1>")
-        print(f"<pre>{html.escape(str(e))}</pre>")
-        print("</body></html>")
+    except Exception:
+        sys.exit(1)

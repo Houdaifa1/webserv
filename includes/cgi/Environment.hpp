@@ -13,8 +13,7 @@ class Environment {
         void SetHttpHeaders();
     public:
         Environment(Connection &conn, HttpRequest &req);
-        void SetEnv();   
-        void PrintEnv();
+        void SetEnv();
         std::vector<std::string> GetEnv();
 };
 
