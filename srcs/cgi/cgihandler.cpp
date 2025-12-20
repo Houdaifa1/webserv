@@ -154,7 +154,6 @@ int CgiHandler::ExecuteScript() {
             const int TIMEOUT_SECONDS = 10;
             pid_t wait_result;
             int status;
-            struct timeval tv;
 
             while ((wait_result = waitpid(pid, &status, WNOHANG)) == 0) {
                 time_t current_time = std::time(NULL);
@@ -165,9 +164,7 @@ int CgiHandler::ExecuteScript() {
                     error_msg.generate_error_response(408);
                     std::exit(1);
                 }
-                tv.tv_sec = 0;
-                tv.tv_usec = 100000;
-                select(0, NULL, NULL, NULL, &tv);
+                usleep(100000);
             }
 
             if (WIFEXITED(status)) {
