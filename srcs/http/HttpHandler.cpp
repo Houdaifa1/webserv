@@ -9,6 +9,7 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
      check_final_path();
      std::string method = connection.request.get_httpmethod();
      std::string    req_path = connection.request.get_correct_path();
+     std::cout << "req path: " << req_path << std::endl;
      if (is_cgi_request(connection.location, req_path))
      {
           if (!is_method_allowed(connection.location, method))
@@ -270,10 +271,8 @@ bool HttpHandler::correct_path()
 void HttpHandler::check_final_path()
 {
      std::string root = connection.location.root;
-     // normalize_path(root);
      std::string request_path = connection.request.get_correct_path();
      std::string final_path = root + "/" + request_path;
-     // normalize_path(final_path);
      connection.request_full_path = final_path;
 }
 

@@ -3,7 +3,7 @@
 
 CgiHandler::CgiHandler(Connection &conn, HttpRequest &req) : name("cgi_path"),
     conn(conn), req(req), direct(conn.location.directives),
-    fullpath(conn.location.root + req.get_correct_path()),
+    fullpath(conn.request_full_path),
     environment(conn, req) {}
 
 int CgiHandler::GetSize(){
@@ -30,7 +30,7 @@ int CgiHandler::GetCommands(std::string ext, std::vector<std::string> &commands)
                 return (1);
             }
             tmp = it->find_last_of("/");
-            if (tmp != std::string::npos && access(it->c_str(), F_OK || R_OK || X_OK) == 0){
+            if (tmp != std::string::npos && access(it->c_str(), F_OK | R_OK | X_OK) == 0){
                     temp = it->c_str() + tmp;
                     temp2 = "/" + type;
                     if(temp == temp2){

@@ -169,7 +169,7 @@ void EventLoop::accept_client(int listen_fd)
     create_connection(client_fd);
 
     struct epoll_event ev;
-    ev.events = EPOLLIN | EPOLLET;
+    ev.events = EPOLLIN;
     ev.data.fd = client_fd;
     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev);
 
@@ -234,7 +234,7 @@ void EventLoop::handle_client(int client_fd)
     }
     else if (result == INCOMPLETE)
         return;
-    else 
+    else
     {
         ErrorHandler error_mesg(connection.location, connection);
         error_mesg.generate_error_response(400);
@@ -263,8 +263,8 @@ void EventLoop::handle_write(int client_fd)
 
         if (s > 0)
         {
-            conn.out_offset += (size_t)s;
-            conn.out_file_pos += (size_t)s;
+            conn.out_offset += s;
+            conn.out_file_pos += s;
 
             if (conn.out_offset < conn.out_chunk_size)
             {
@@ -291,7 +291,7 @@ void EventLoop::handle_write(int client_fd)
     ssize_t sent = send(client_fd, buf, nread, 0);
     if (sent > 0)
     {
-        conn.out_file_pos += (ssize_t)sent;
+        conn.out_file_pos += sent;
 
         if (sent < nread)
         {

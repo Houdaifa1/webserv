@@ -293,9 +293,13 @@ void Parser::validate_location(Server &server, Location &location, int server_ro
             parse_autoindex(d, path);
             location.autoindex = d.args[0];
         }
-        else if (++cgi_path_count > 1)
+        else if (d.name == "cgi_path")
+        {
+            ++cgi_path_count;
+            if (cgi_path_count > 1)
                 throw Parsererror(DuplicateCgiPath, "location", path, d.position.line);
-            parse_cgi_path(d, path);
+            parse_cgi_path(d, path );
+        }
     }
 
     if (root_count == 0 && server_root_count != 1)
