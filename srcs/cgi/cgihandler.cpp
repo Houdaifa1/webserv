@@ -10,16 +10,6 @@ int CgiHandler::GetSize(){
     return (environment.GetEnv().size());
 }
 
-char* cpp_strdup(const char* s) {
-    if (s == NULL) {
-        return NULL;
-    }
-    size_t len = std::strlen(s) + 1;
-    char* new_string = new char[len];
-    std::strcpy(new_string, s);
-    return new_string;
-}
-
 int CgiHandler::GetCommands(std::string ext, std::vector<std::string> &commands){
     std::vector<std::string>::iterator it;
     std::string type, temp, temp2;
@@ -40,7 +30,7 @@ int CgiHandler::GetCommands(std::string ext, std::vector<std::string> &commands)
                 return (1);
             }
             tmp = it->find_last_of("/");
-            if (tmp != std::string::npos && access(it->c_str(), R_OK || X_OK) == 0){
+            if (tmp != std::string::npos && access(it->c_str(), F_OK || R_OK || X_OK) == 0){
                     temp = it->c_str() + tmp;
                     temp2 = "/" + type;
                     if(temp == temp2){
@@ -70,29 +60,37 @@ int CgiHandler::SetCommands(){
                     return (0);
         }
     }
-    (void)req;
     return (1);
 }
 
 bool CgiHandler::CheckFile(){
     ErrorHandler error_mesg(conn.location, conn);
+    struct stat st;
 
-    const std::string file = fullpath;
-    if (access(conn.location.root.c_str(), R_OK | X_OK) == -1)
-    {
-        error_mesg.generate_error_response(403);
+    const char *root = conn.location.root.c_str();
+    const char *file = fullpath.c_str();
+    if (stat(root, &st) == 0){
+        if (access(root, R_OK | X_OK) == -1 || !S_ISDIR(st.st_mode)){
+            error_mesg.generate_error_response(403);
+            return (false);
+        }
+    }
+    else {
+        error_mesg.generate_error_response(404);
         return (false);
     }
-    if (access(file.c_str(), F_OK) == 0){
-        if (access(file.c_str(), X_OK | R_OK))
+    if (stat(file, &st) == 0){ 
+        if (!S_ISREG(st.st_mode) || access(file, X_OK | R_OK) == -1)
         {
             error_mesg.generate_error_response(403);
             return (false);
         }
-        return (true);
     }
-    error_mesg.generate_error_response(404);
-    return (false);
+    else{
+        error_mesg.generate_error_response(404);
+        return (false);
+    }
+    return (true);
 }
 
 int CgiHandler::ExecuteScript() {
@@ -164,7 +162,7 @@ int CgiHandler::ExecuteScript() {
                     kill(pid, SIGKILL);
                     waitpid(pid, NULL, 0);
                     close(pipe_out[0]);
-                    error_msg.generate_error_response(500);
+                    error_msg.generate_error_response(408);
                     std::exit(1);
                 }
                 tv.tv_sec = 0;
@@ -194,6 +192,11 @@ int CgiHandler::ExecuteScript() {
             }
             close(pipe_out[0]);
 
+            // if (buffer.empty()){
+            //     error_msg.generate_error_response(400);
+            //     std::exit(1);
+            // }
+
             std::stringstream header;
             header << "HTTP/1.0 200 Ok\r\n"
                 << "Content-Type: text/html\r\n";
@@ -206,14 +209,14 @@ int CgiHandler::ExecuteScript() {
                     if (it->first == "Cookie")
                         break;
                 }
-                for (end = pos; buffer[end] != '\n' ; end++)
+                for (end = pos; (buffer[end] && buffer[end] != '\n'); end++)
                     ;
                 if (it == headers.end()){
                     std::string tmp = buffer.substr(pos, end);
                     header << tmp << "\r\n";
                 }
-                while (buffer[end] != '<')
-                end++;
+                if (buffer[end] == '\n')
+                    end++;
             }
             header << "Content-Length: " << buffer.size() - end << "\r\n"
                 << "Connection: close\r\n\r\n";
@@ -224,4 +227,3 @@ int CgiHandler::ExecuteScript() {
     }
     return (1);
 }
-

@@ -10,7 +10,7 @@ import urllib.error
 # --- CONFIGURATION ---
 # Ensure your C++ server passes this env var, or hardcode it for testing only.
 API_KEY = os.environ.get('GROQ_API', '')
-MODEL = "llama-3.1-8b-instant"
+MODEL = "openai/gpt-oss-120b"
 
 # --- SILENCE STDERR ---
 sys.stderr = open(os.devnull, 'w')
@@ -63,7 +63,7 @@ def call_ai_api(history):
     url = "https://api.groq.com/openai/v1/chat/completions"
     
     api_messages = []
-    api_messages.append({"role": "system", "content": "You are a helpful coding assistant. Keep answers short and concise."})
+    api_messages.append({"role": "system", "content": "You are a helpful coding assistant. Keep answers short and concise. IMPORTANT: Your response must never exceed 500 words EVEN IF YOU'RE ASKED TO EXCEED IT."})
     
     for msg in history:
         role = "user" if msg['role'] == 'user' else "assistant"
@@ -77,9 +77,11 @@ def call_ai_api(history):
         "temperature": 0.7
     }
     
+    # --- ADDED USER-AGENT TO HEADERS TO FIX 403 ERROR ---
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {API_KEY}'
+        'Authorization': f'Bearer {API_KEY}',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     
     try:
@@ -171,12 +173,8 @@ try:
 </html>
 """
     
-    # --- FIXED COOKIE LINE HERE ---
-    # Max-Age=86400 means the cookie lasts for 24 hours
     print(f"Set-Cookie: session_id={session_id}; Max-Age=86400; Path=/")
-    print()
     print(html_template.replace('{chat_history_html}', history_html))
 
 except Exception:
-    # Failsafe
     sys.exit(1)

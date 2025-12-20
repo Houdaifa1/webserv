@@ -10,7 +10,6 @@ void Environment::SetHeaders()
     for (int i = 0; i < 2; i++)
     {
         if (headers.find(index[i]) != headers.end())
-
                 env.push_back(var[i] + headers[index[i]]);
         else
             env.push_back(var[i]);
@@ -27,38 +26,47 @@ void Environment::SetHttpHeaders(){
         std::string var = iter->first;
         std::string val = iter->second;
 
-        if (var == "Content-Type" || var == "Content-Length" || var == "Host")
+        if (var == "Content-Type" || var == "Content-Length")
             continue;
-        
+
         for (unsigned long i = 0; i < var.size(); i++){
             if (var[i] == '-')
                 var[i] = '_';
             else
                 var[i] = std::toupper(var[i]);
         }
-
         env.push_back("HTTP_" + var + '=' + val);
     }
 }
 
 void Environment::SetEnv() {
-    std::vector<Directive>::iterator iter;
-    std::vector<std::string>::iterator it;
+    // std::vector<std::string>::iterator it;
+    // std::map<std::string, std::string>::iterator iter;
     std::string groq_key("");
 
     SetHeaders();
     SetHttpHeaders();
     env.push_back("REQUEST_METHOD=" + req.get_httpmethod());
     env.push_back("SERVER_PROTOCOL=" + req.get_httpversion());
-    env.push_back("SERVER_NAME=" + req.get_host_domain());
-    env.push_back("SERVER_PORT=" + req.get_host_port());
-    env.push_back("REDIRECT_STATUS=200");
-    env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    // env.push_back("SERVER_NAME=" + req.get_host_domain());
+    // env.push_back("SERVER_PORT=" + req.get_host_port());
+    // env.push_back("REDIRECT_STATUS=200");
+    // env.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env.push_back("QUERY_STRING=" + req.get_query());
-    env.push_back("PATH_TRANSLATED=" + conn.location.root + req.get_correct_path());
+    // env.push_back("PATH_TRANSLATED=" + conn.location.root + req.get_correct_path());
     env.push_back("REMOTE_ADDR=" + conn.client_ip);
     env.push_back("REMOTE_PORT=" + req.get_host_port());
     env.push_back("GROQ_API=" + groq_key);
+
+    // std::cout << "$$$$$$$$ ENV $$$$$$$$$\n";
+    // for(it = env.begin(); it != env.end(); ++it){
+    //     std::cout << *it << std::endl;
+    // }
+    // std::map<std::string, std::string> headers = req.get_headers();
+    // std::cout << "$$$$$$$$ HEADERS $$$$$$$$$\n";
+    // for(iter = headers.begin(); iter != headers.end(); ++iter){
+    //     std::cout << iter->first << "=" << iter->second << std::endl;
+    // }
 }
 
 std::vector<std::string> Environment::GetEnv() {
