@@ -31,6 +31,11 @@ enum ParserErrorType
     NotPath,
     InvalidMethodArgs,
     InvalidNumberArgsCgi,
+    DuplicateAllowedMethods,
+    DuplicateUploadStore,
+    DuplicateIndex,
+    DuplicateClientMaxBodySize,
+    DuplicateCgiPath
 };
 
 class Parsererror

@@ -53,7 +53,7 @@ std::string get_error(int code)
 
 std::string HttpResponse::build_headers()
 {
-    std::string headersStr = "HTTP/1.1 " 
+    std::string headersStr = "HTTP/1.1 "
         + intTo_String(status_code) + " " 
         + get_error(status_code) + "\r\n";
 
@@ -94,7 +94,4 @@ void HttpResponse::sendresponse()
     connection.out_file_pos = 0;
     connection.sending_file = true;
 }
-
-
-// ERROR INDEX
 

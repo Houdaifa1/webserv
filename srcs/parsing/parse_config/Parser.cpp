@@ -3,8 +3,6 @@
 Parser::Parser(const std::vector<Token> &tokens, std::string path) : tokens(tokens),
                                                                      index(0), path(path) {}
 
-
-
 bool Parser::is_known_directive(std::string &value, const std::string &where)
 {
     static const std::string location_directives[] = {
@@ -14,15 +12,13 @@ bool Parser::is_known_directive(std::string &value, const std::string &where)
         "autoindex",
         "index",
         "cgi_path",
-        "upload_store"
-    };
+        "upload_store"};
 
     static const std::string server_directives[] = {
         "listen",
         "root",
         "client_max_body_size",
-        "error_page"
-    };
+        "error_page"};
 
     const std::string *arr = NULL;
     size_t size = 0;
@@ -83,10 +79,10 @@ Directive Parser::parse_directive()
     index++;
     while (index < tokens.size())
     {
-          
+
         if (tokens[index].type == SYMBOL)
         {
-            
+
             if (tokens[index].value == ";")
             {
                 index++;
@@ -170,7 +166,7 @@ Location Parser::parse_location()
             continue;
         }
     }
-     throw Parsererror(UnexpectedEOFend, "", path, tokens[index - 1].line + 1);
+    throw Parsererror(UnexpectedEOFend, "", path, tokens[index - 1].line + 1);
 }
 
 Server Parser::parse_server()
@@ -196,7 +192,7 @@ Server Parser::parse_server()
                 index++;
                 return server;
             }
-            throw Parsererror(UnexpectedSymbol, tokens[index].value,path, tokens[index].line);
+            throw Parsererror(UnexpectedSymbol, tokens[index].value, path, tokens[index].line);
         }
         if (tokens[index].type == COMMENT)
         {
@@ -211,7 +207,7 @@ Server Parser::parse_server()
             continue;
         }
         if (tokens[index].value == "server")
-            throw Parsererror(NestedBlocks, tokens[index].value,path, tokens[index].line);
+            throw Parsererror(NestedBlocks, tokens[index].value, path, tokens[index].line);
         if (is_directive(tokens[index], "server"))
         {
             Directive new_directive;
@@ -228,7 +224,7 @@ void Parser::check_directive(Directive &directive, bool &contain_listen, int &co
     if (directive.name == "listen")
     {
         parse_listen(directive, path);
-        std::pair<std::string, int> pair = std::make_pair(directive.args[0], atoi(directive.args[1].c_str())); 
+        std::pair<std::string, int> pair = std::make_pair(directive.args[0], atoi(directive.args[1].c_str()));
         config.pairs.push_back(pair);
         contain_listen = true;
     }
@@ -242,78 +238,122 @@ void Parser::check_directive(Directive &directive, bool &contain_listen, int &co
     {
         parse_body_size(directive, path);
     }
+}
 
+void Parser::validate_location(Server &server, Location &location, int server_root_count)
+{
+    int root_count = 0;
+    int autoindex_count = 0;
+    int allowed_methods_count = 0;
+    int index_count = 0;
+    int upload_store_count = 0;
+    int cgi_path_count = 0;
+
+    location.root = server.global_root;
+    location.autoindex = "none";
+
+    for (size_t i = 0; i < location.directives.size(); ++i)
+    {
+        Directive &d = location.directives[i];
+
+        if (d.name == "allowed_methods")
+        {
+            ++allowed_methods_count;
+            if (allowed_methods_count > 1)
+                throw Parsererror( DuplicateAllowedMethods, "location", path, d.position.line);
+            parse_allowed_methods(d, path);
+        }
+        else if (d.name == "upload_store")
+        {
+            ++upload_store_count;
+            if (upload_store_count > 1)
+                throw Parsererror(DuplicateUploadStore, "location", path, d.position.line);
+            parse_upload_store(d, path);
+        }
+        else if (d.name == "index")
+        {
+            ++index_count;
+            if (index_count > 1)
+                throw Parsererror(DuplicateIndex, "location", path, d.position.line);
+            parse_index(d, path);
+        }
+        else if (d.name == "root")
+        {
+            ++root_count;
+            if (root_count > 1)
+                throw Parsererror(DuplicateRoot, "location", path, d.position.line);
+            parse_root(d, path);
+            location.root = d.args[0];
+        }
+        else if (d.name == "autoindex")
+        {
+            ++autoindex_count;
+            if (autoindex_count > 1)
+                throw Parsererror(DuplicateAutoindex, "location", path, d.position.line);
+            parse_autoindex(d, path);
+            location.autoindex = d.args[0];
+        }
+        else if (d.name == "cgi_path")
+        {
+            ++cgi_path_count;
+            if (cgi_path_count > 1)
+                throw Parsererror(DuplicateCgiPath, "location", path, d.position.line);
+            parse_cgi_path(d, path );
+        }
+    }
+
+    if (root_count == 0 && server_root_count != 1)
+        throw Parsererror(MissingRoot, "", path, location.position.line);
+}
+
+void Parser::validate_locations(Server &server, int server_root_count)
+{
+    for (size_t i = 0; i < server.locations.size(); ++i)
+    {
+        validate_location(server, server.locations[i], server_root_count);
+    }
+}
+
+
+void Parser::validate_server(Config &config, Server &server)
+{
+    bool has_listen = false;
+    int root_count = 0;
+    int client_body_size_count = 0;
+
+    for (size_t i = 0; i < server.directives.size(); ++i)
+    {
+        Directive &d = server.directives[i];
+
+        if (d.name == "client_max_body_size")
+        {
+            ++client_body_size_count;
+            if (client_body_size_count > 1)
+                throw Parsererror(DuplicateClientMaxBodySize, "server", path, d.position.line);
+        }
+        check_directive(d, has_listen, root_count, config, server.global_root);
+    }
+
+    if (!has_listen)
+        throw Parsererror(MissingListen, "", path, 0);
+
+    if (root_count > 1)
+        throw Parsererror(DuplicateRoot, "server", path, 0);
+
+    validate_locations(server, root_count);
+    parse_error_pages(server, path);
 }
 
 void Parser::validate_config(Config &config)
 {
-    if (config.servers.size() < 1)
+    if (config.servers.empty())
         throw Parsererror(NoServerFound, "", path, 0);
-    if (config.globals.size() >= 1)
-        throw Parsererror(GlobalDirective, config.globals[0].name, path,config.globals[0].position.line);
-    for (size_t i = 0; i < config.servers.size(); i++)
-    {
-        bool contain_listen = false;
-        int contain_root = 0;
-        for (size_t j = 0; j < config.servers[i].directives.size(); j++)
-        {
-            check_directive(config.servers[i].directives[j], contain_listen, contain_root, config, config.servers[i].global_root);
-        }
-        if (!contain_listen)
-            throw Parsererror(MissingListen, "", path, 0);
-        if (contain_root == 0 || contain_root == 1 )
-        {
-            for (size_t j = 0; j < config.servers[i].locations.size(); j++)
-            {
-                int how_many_root = 0;
-                int contain_autoindex = 0;
-                config.servers[i].locations[j].root = config.servers[i].global_root;
-                config.servers[i].locations[j].autoindex = "none";
-                for (size_t y = 0; y < config.servers[i].locations[j].directives.size(); y++)
-                {
-                    if (config.servers[i].locations[j].directives[y].name == "allowed_methods")
-                    {
-                            parse_allowed_methods(config.servers[i].locations[j].directives[y], path);
-                    }
-                    if (config.servers[i].locations[j].directives[y].name == "upload_store")
-                    {
-                            parse_upload_store(config.servers[i].locations[j].directives[y], path);
-                    }
-                    if (config.servers[i].locations[j].directives[y].name == "cgi_path")
-                    {
-                            parse_cgi_path(config.servers[i].locations[j].directives[y], path);
-                    }
-                    if (config.servers[i].locations[j].directives[y].name == "index")
-                    {
-                            parse_index(config.servers[i].locations[j].directives[y], path);
-                    }
-                    if (config.servers[i].locations[j].directives[y].name == "root")
-                    {
-                        parse_root(config.servers[i].locations[j].directives[y], path);
-                        config.servers[i].locations[j].root = config.servers[i].locations[j].directives[y].args[0];
-                        how_many_root++;
-                    }
-                    if (config.servers[i].locations[j].directives[y].name == "autoindex")
-                    {
-                        contain_autoindex++;
-                        std::string option = config.servers[i].locations[j].directives[y].args[0];
-                        parse_autoindex(config.servers[i].locations[j].directives[y], path);
-                        config.servers[i].locations[j].autoindex = option;
-                    }
 
-                }
-                if (contain_autoindex > 1)
-                    throw Parsererror(DuplicateAutoindex , "location", path, 0);
-                if (how_many_root > 1)
-                    throw Parsererror(DuplicateRoot , "location", path, 0);
-                if (how_many_root == 0 && contain_root != 1)
-                    throw Parsererror(MissingRoot, "", path, 0);
-            }
-        }
-        if (contain_root > 1)
-            throw Parsererror(DuplicateRoot , "server", path, 0);
-        parse_error_pages(config.servers[i], path);
-    }
+    if (config.globals.size() >= 1)
+        throw Parsererror(GlobalDirective, config.globals[0].name, path, config.globals[0].position.line);
+
+    for (size_t i = 0; i < config.servers.size(); ++i)
+        validate_server(config, config.servers[i]);
 }
 
 int Parser::Parseall(Config &config)
@@ -322,7 +362,7 @@ int Parser::Parseall(Config &config)
     {
         while (index < tokens.size())
         {
-           
+
             if (tokens[index].type == COMMENT)
             {
                 index++;

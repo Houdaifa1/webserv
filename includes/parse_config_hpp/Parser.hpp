@@ -23,6 +23,9 @@ class Parser
         Server parse_server();
         Location parse_location();
         void validate_config(Config &config);
+        void validate_server(Config &config, Server &server);
+        void validate_location(Server &server, Location &location, int server_root_count);
+        void validate_locations(Server &server, int server_root_count);
         void check_directive(Directive &directive, bool &contain_listen, int &contain_root, Config &config, std::string &global_root);
 
 };

@@ -8,11 +8,9 @@ import urllib.request
 import urllib.error
 
 # --- CONFIGURATION ---
-# 1. GET KEY: https://console.groq.com/keys
-API_KEY = os.environ.get('GROK_API', '')
-
-# 2. MODEL: Groq provides Llama 3 for free and it is SUPER FAST.
-MODEL = "llama-3.1-8b-instant"
+# Ensure your C++ server passes this env var, or hardcode it for testing only.
+API_KEY = "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"
+MODEL = "openai/gpt-oss-120b"
 
 # --- SILENCE STDERR ---
 sys.stderr = open(os.devnull, 'w')
@@ -62,12 +60,10 @@ def call_ai_api(history):
     """
     Calls Groq API (OpenAI Compatible)
     """
-    # 1. GROQ URL
     url = "https://api.groq.com/openai/v1/chat/completions"
     
-    # 2. PAYLOAD
     api_messages = []
-    api_messages.append({"role": "system", "content": "You are a helpful coding assistant. Keep answers short and concise."})
+    api_messages.append({"role": "system", "content": "You are a helpful coding assistant. Keep answers short and concise. IMPORTANT: Your response must never exceed 500 words EVEN IF YOU'RE ASKED TO EXCEED IT."})
     
     for msg in history:
         role = "user" if msg['role'] == 'user' else "assistant"
@@ -81,13 +77,14 @@ def call_ai_api(history):
         "temperature": 0.7
     }
     
+    # --- ADDED USER-AGENT TO HEADERS TO FIX 403 ERROR ---
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {API_KEY}'
+        'Authorization': f'Bearer {API_KEY}',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     
     try:
-        # Groq is fast, but we keep a safe timeout
         req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers)
         with urllib.request.urlopen(req, timeout=10) as response:
             result = json.load(response)
@@ -176,11 +173,8 @@ try:
 </html>
 """
     
-    print(f"Set-Cookie: session_id={session_id}")
-    print()
+    print(f"Set-Cookie: session_id={session_id}; Max-Age=86400; Path=/")
     print(html_template.replace('{chat_history_html}', history_html))
 
 except Exception:
-    print("Set-Cookie: session_id=error_recovery")
-    print()
-    print("<html><body><h1>System Error</h1></body></html>")
+    sys.exit(1)

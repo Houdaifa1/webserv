@@ -40,5 +40,6 @@ void            ft_remove_whitespaces(std::string& s);
 void            parse_error_pages(Server &server, std::string &path);
 void            normalize_path(std::string &path);
 void            SignalHandler(int sig);
+void            send_executed_cgi(int client_fd, const std::string &path);
 
 # endif

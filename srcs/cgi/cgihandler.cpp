@@ -3,21 +3,11 @@
 
 CgiHandler::CgiHandler(Connection &conn, HttpRequest &req) : name("cgi_path"),
     conn(conn), req(req), direct(conn.location.directives),
-    fullpath(conn.location.root + req.get_correct_path()),
+    fullpath(conn.request_full_path),
     environment(conn, req) {}
 
 int CgiHandler::GetSize(){
     return (environment.GetEnv().size());
-}
-
-char* cpp_strdup(const char* s) {
-    if (s == NULL) {
-        return NULL;
-    }
-    size_t len = std::strlen(s) + 1;
-    char* new_string = new char[len];
-    std::strcpy(new_string, s);
-    return new_string;
 }
 
 int CgiHandler::GetCommands(std::string ext, std::vector<std::string> &commands){
@@ -40,7 +30,7 @@ int CgiHandler::GetCommands(std::string ext, std::vector<std::string> &commands)
                 return (1);
             }
             tmp = it->find_last_of("/");
-            if (tmp != std::string::npos && access(it->c_str(), R_OK || X_OK) == 0){
+            if (tmp != std::string::npos && access(it->c_str(), F_OK | R_OK | X_OK) == 0){
                     temp = it->c_str() + tmp;
                     temp2 = "/" + type;
                     if(temp == temp2){
@@ -70,29 +60,37 @@ int CgiHandler::SetCommands(){
                     return (0);
         }
     }
-    (void)req;
     return (1);
 }
 
 bool CgiHandler::CheckFile(){
     ErrorHandler error_mesg(conn.location, conn);
+    struct stat st;
 
-    const std::string file = fullpath;
-    if (access(conn.location.root.c_str(), R_OK | X_OK) == -1)
-    {
-        error_mesg.generate_error_response(403);
+    const char *root = conn.location.root.c_str();
+    const char *file = fullpath.c_str();
+    if (stat(root, &st) == 0){
+        if (access(root, R_OK | X_OK) == -1 || !S_ISDIR(st.st_mode)){
+            error_mesg.generate_error_response(403);
+            return (false);
+        }
+    }
+    else {
+        error_mesg.generate_error_response(404);
         return (false);
     }
-    if (access(file.c_str(), F_OK) == 0){
-        if (access(file.c_str(), X_OK | R_OK))
+    if (stat(file, &st) == 0){ 
+        if (!S_ISREG(st.st_mode) || access(file, X_OK | R_OK) == -1)
         {
             error_mesg.generate_error_response(403);
             return (false);
         }
-        return (true);
     }
-    error_mesg.generate_error_response(404);
-    return (false);
+    else{
+        error_mesg.generate_error_response(404);
+        return (false);
+    }
+    return (true);
 }
 
 int CgiHandler::ExecuteScript() {
@@ -106,6 +104,7 @@ int CgiHandler::ExecuteScript() {
         dst.push_back((char *)it->c_str());
     }
     dst.push_back(NULL);
+
     char **env = dst.data();
     char *args[3] = {(char *)command.c_str(), (char *)fullpath.c_str(), NULL};
 
@@ -163,12 +162,25 @@ int CgiHandler::ExecuteScript() {
                     kill(pid, SIGKILL);
                     waitpid(pid, NULL, 0);
                     close(pipe_out[0]);
-                    error_msg.generate_error_response(504);
+                    error_msg.generate_error_response(408);
                     std::exit(1);
                 }
                 tv.tv_sec = 0;
                 tv.tv_usec = 100000;
                 select(0, NULL, NULL, NULL, &tv);
+            }
+
+            if (WIFEXITED(status)) {
+                if (WEXITSTATUS(status) != 0){
+                    close(pipe_out[0]);
+                    error_msg.generate_error_response(500);
+                    std::exit(1);
+                }
+            }
+            else if (WIFSIGNALED(status)) {
+                close(pipe_out[0]);
+                error_msg.generate_error_response(500);
+                std::exit(1);
             }
 
             std::string buffer;
@@ -180,19 +192,35 @@ int CgiHandler::ExecuteScript() {
             }
             close(pipe_out[0]);
 
-            waitpid(pid, NULL, 0);
+            if (buffer.empty()){
+                send_executed_cgi(conn.client_fd, conn.request.get_correct_path());
+                std::exit(0);
+            }
+
             std::stringstream header;
             header << "HTTP/1.0 200 Ok\r\n"
                 << "Content-Type: text/html\r\n";
             std::size_t pos = buffer.find("Set-Cookie:", 0);
             size_t end = 0;
             if (pos == 0){
-                for (end = pos; buffer[end] != '\n' ; end++)
+                std::map<std::string, std::string> headers = req.get_headers();
+                std::map<std::string, std::string>::iterator it;
+                for (it = headers.begin(); it != headers.end(); ++it){
+                    if (it->first == "Cookie")
+                        break;
+                }
+                for (end = pos; (buffer[end] && buffer[end] != '\n'); end++)
                     ;
-                std::string tmp = buffer.substr(pos, end);
-                header << tmp << "\r\n";
-                while (buffer[end] != '<')
-                end++;
+                if (it == headers.end()){
+                    std::string tmp = buffer.substr(pos, end);
+                    header << tmp << "\r\n";
+                }
+                while (buffer[end] == '\n')
+                    end++;
+                if (!buffer[end]){
+                    send_executed_cgi(conn.client_fd, conn.request.get_correct_path());
+                    std::exit(0);
+                }
             }
             header << "Content-Length: " << buffer.size() - end << "\r\n"
                 << "Connection: close\r\n\r\n";
@@ -203,4 +231,3 @@ int CgiHandler::ExecuteScript() {
     }
     return (1);
 }
-

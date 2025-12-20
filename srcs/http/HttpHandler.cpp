@@ -36,6 +36,7 @@ HttpHandler::HttpHandler(Connection &connection) : connection(connection)
      else if (method == "DELETE")
           handle_delete();
 }
+
 bool check_is_hex(char h)
 {
      bool check = false;
@@ -270,10 +271,8 @@ bool HttpHandler::correct_path()
 void HttpHandler::check_final_path()
 {
      std::string root = connection.location.root;
-     // normalize_path(root);
      std::string request_path = connection.request.get_correct_path();
      std::string final_path = root + "/" + request_path;
-     // normalize_path(final_path);
      connection.request_full_path = final_path;
 }
 
@@ -391,7 +390,7 @@ std::string HttpHandler::get_html_entries(std::vector<std::string> &entries)
     for (size_t i = 0; i < entries.size(); ++i)
     {
         std::string entry = entries[i];
-        std::string full_link = connection.request_full_path;
+        std::string full_link = "/" + connection.request.get_correct_path();
         if (full_link.length() > 1 && full_link[full_link.length() - 1] != '/')
             full_link += "/";
         full_link += entry;
@@ -401,7 +400,7 @@ std::string HttpHandler::get_html_entries(std::vector<std::string> &entries)
     }
 
     html += "</ul>";
-    html += "<div class=\"footer\">Webserv Directory Listing — Built with 💙</div>";
+    html += "<div class=\"footer\">Webserv Directory Listing </div>";
     html += "</div></body></html>";
 
     return html;
